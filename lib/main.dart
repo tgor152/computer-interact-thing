@@ -129,8 +129,8 @@ class _MyHomePageState extends State<MyHomePage> {
         e.type
       ]);
     }
-    final dir = await getApplicationDocumentsDirectory();
-    final file = File('${dir.path}/mouse_events.xlsx');
+    final desktopPath = '${Platform.environment['USERPROFILE']}\\Desktop';
+    final file = File('$desktopPath/mouse_events.xlsx');
     await file.writeAsBytes(excel.encode()!);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Exported to ${file.path}')),
