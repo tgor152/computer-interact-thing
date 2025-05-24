@@ -1,10 +1,12 @@
 import 'dart:async';
 import 'dart:ffi' as ffi;
+import 'package:ffi/ffi.dart';
 import 'dart:io';
 import 'package:excel/excel.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:win32/win32.dart';
 import 'package:flutter/material.dart';
+import 'dart:math';
 
 void main() {
   runApp(const MyApp());
@@ -71,7 +73,8 @@ class _MyHomePageState extends State<MyHomePage> {
   List<MouseEvent> _events = [];
   int _clickCount = 0;
   double _distance = 0.0;
-  Timer? _timer;
+  Timer? _moveTimer;
+  Timer? _clickTimer;
   int? _lastX;
   int? _lastY;
 
@@ -82,32 +85,30 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _startMouseTracking() {
-    _timer = Timer.periodic(const Duration(milliseconds: 50), (_) {
-      final pt = ffi.calloc<POINT>();
+    _moveTimer = Timer.periodic(const Duration(milliseconds: 50), (_) {
+      final pt = calloc<POINT>();
       GetCursorPos(pt);
       final x = pt.ref.x;
       final y = pt.ref.y;
-      ffi.calloc.free(pt);
+      calloc.free(pt);
       if (_lastX != null && _lastY != null) {
         final dx = (x - _lastX!).abs();
         final dy = (y - _lastY!).abs();
-        _distance += (dx * dx + dy * dy).toDouble().sqrt();
+        _distance += sqrt((dx * dx + dy * dy).toDouble());
       }
       _lastX = x;
       _lastY = y;
       _events.add(MouseEvent(DateTime.now(), x, y, 'move'));
       setState(() {});
     });
-    // Set up a global mouse hook for clicks (Win32)
-    // For simplicity, we will poll GetAsyncKeyState for left mouse button
-    Timer.periodic(const Duration(milliseconds: 50), (_) {
+    _clickTimer = Timer.periodic(const Duration(milliseconds: 50), (_) {
       if ((GetAsyncKeyState(VK_LBUTTON) & 0x8000) != 0) {
         if (_events.isEmpty || _events.last.type != 'click') {
-          final pt = ffi.calloc<POINT>();
+          final pt = calloc<POINT>();
           GetCursorPos(pt);
           final x = pt.ref.x;
           final y = pt.ref.y;
-          ffi.calloc.free(pt);
+          calloc.free(pt);
           _events.add(MouseEvent(DateTime.now(), x, y, 'click'));
           _clickCount++;
           setState(() {});
@@ -138,7 +139,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   void dispose() {
-    _timer?.cancel();
+    _moveTimer?.cancel();
+    _clickTimer?.cancel();
     super.dispose();
   }
 

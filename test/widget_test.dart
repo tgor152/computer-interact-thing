@@ -11,20 +11,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:computer_interact_thing/main.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
+  testWidgets('Mouse tracking UI smoke test', (WidgetTester tester) async {
     await tester.pumpWidget(const MyApp());
-
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
-
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
-
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    // Check for the presence of the main tracking text
+    expect(find.textContaining('Mouse movements tracked'), findsOneWidget);
+    expect(find.textContaining('Mouse clicks'), findsOneWidget);
+    expect(find.textContaining('Distance moved'), findsOneWidget);
+    expect(find.textContaining('Tracking is running in the background.'), findsOneWidget);
   });
 }
