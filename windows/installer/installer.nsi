@@ -18,7 +18,10 @@
 Name "${APP_NAME}"
 # Ensure the output directory exists
 !system 'powershell -Command "if (!(Test-Path -Path \"..\..\build\windows\")) { New-Item -Path \"..\..\build\windows\" -ItemType Directory -Force; Write-Host \"Created build\windows directory\" }"'
-OutFile "..\..\build\windows\${APP_NAME}-Installer-${VERSION}.exe"
+# Use a simple fixed name without spaces or variables to avoid path issues
+OutFile "..\..\build\windows\ComputerInteractInstaller.exe"
+# Create a file with the version info for reference
+!system 'powershell -Command "Set-Content -Path \"..\..\build\windows\installer_version.txt\" -Value \"${VERSION}\" -Force"'
 InstallDir "$PROGRAMFILES\${APP_NAME}"
 InstallDirRegKey HKLM "${UNINSTALL_REG_KEY}" "InstallLocation"
 
