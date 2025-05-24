@@ -16,7 +16,7 @@
 
 # Set output file name and properties
 Name "${APP_NAME}"
-OutFile "..\..\build\windows\${APP_NAME} Installer ${VERSION}.exe"
+OutFile "..\..\build\windows\${APP_NAME}-Installer-${VERSION}.exe"
 InstallDir "$PROGRAMFILES\${APP_NAME}"
 InstallDirRegKey HKLM "${UNINSTALL_REG_KEY}" "InstallLocation"
 
