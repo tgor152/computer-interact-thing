@@ -130,6 +130,10 @@ class _MyHomePageState extends State<MyHomePage> {
       ]);
     }
     final desktopPath = '${Platform.environment['USERPROFILE']}\\Desktop';
+    final desktopDir = Directory(desktopPath);
+    if (!await desktopDir.exists()) {
+      await desktopDir.create(recursive: true);
+    }
     final file = File('$desktopPath/mouse_events.xlsx');
     await file.writeAsBytes(excel.encode()!);
     ScaffoldMessenger.of(context).showSnackBar(
