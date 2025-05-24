@@ -32,7 +32,7 @@ jobs:
           cd windows/installer
           makensis installer.nsi
       - name: Upload Installer Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: windows-installer
           path: build/windows/Computer Interact Thing Installer *.exe
