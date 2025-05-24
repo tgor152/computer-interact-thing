@@ -31,11 +31,14 @@ jobs:
         run: |
           cd windows/installer
           makensis installer.nsi
+      - name: List build directory contents
+        run: |
+          Get-ChildItem -Path build\windows -Recurse -File -Include *.exe | Select-Object FullName
       - name: Upload Installer Artifact
         uses: actions/upload-artifact@v4
         with:
           name: windows-installer
-          path: build/windows/Computer*.exe
+          path: build/windows/Computer Interact Thing Installer *.exe
           if-no-files-found: error
           overwrite: true
           retention-days: 90
@@ -43,7 +46,7 @@ jobs:
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: softprops/action-gh-release@v1
         with:
-          files: build/windows/Computer*.exe
+          files: build/windows/Computer Interact Thing Installer *.exe
           name: Release ${{ github.sha }}
           tag_name: v${{ github.run_number }}
           draft: false
