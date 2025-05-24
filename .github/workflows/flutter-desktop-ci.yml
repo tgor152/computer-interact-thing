@@ -29,16 +29,31 @@ jobs:
           echo "$env:ProgramFiles\NSIS" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
       - name: Build Windows Installer
         run: |
+          # Create the build/windows directory if it doesn't exist
+          if (!(Test-Path -Path "build\windows")) {
+            New-Item -Path "build\windows" -ItemType Directory -Force
+          }
           cd windows/installer
           makensis installer.nsi
       - name: List build directory contents
         run: |
-          Get-ChildItem -Path build\windows -Recurse -File -Include *.exe | Select-Object FullName
+          Write-Host "Looking for installer files..."
+          Get-ChildItem -Path build -Recurse -Include *.exe | Select-Object FullName, Name, Length, LastWriteTime
+          Write-Host "Checking if installer file exists..."
+          $installerPath = "build\windows\Computer Interact Thing Installer *.exe"
+          if (Test-Path -Path $installerPath) {
+            Write-Host "Found installer at: $installerPath"
+            Get-ChildItem -Path $installerPath | Select-Object FullName, Name, Length, LastWriteTime
+          } else {
+            Write-Host "Installer not found at expected path: $installerPath"
+            Write-Host "Listing contents of build\windows:"
+            Get-ChildItem -Path build\windows | Select-Object FullName, Name
+          }
       - name: Upload Installer Artifact
         uses: actions/upload-artifact@v4
         with:
           name: windows-installer
-          path: 'build/windows/Computer Interact Thing Installer *.exe'
+          path: "build/windows/Computer Interact Thing Installer*.exe"
           if-no-files-found: error
           overwrite: true
           retention-days: 90
@@ -46,7 +61,7 @@ jobs:
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: softprops/action-gh-release@v1
         with:
-          files: 'build/windows/Computer Interact Thing Installer *.exe'
+          files: "build/windows/Computer Interact Thing Installer*.exe"
           name: Release ${{ github.sha }}
           tag_name: v${{ github.run_number }}
           draft: false
