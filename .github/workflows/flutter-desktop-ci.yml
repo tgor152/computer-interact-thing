@@ -34,26 +34,95 @@ jobs:
             New-Item -Path "build\windows" -ItemType Directory -Force
           }
           cd windows/installer
-          makensis installer.nsi
+          
+          # Check pubspec.yaml version
+          Write-Host "Reading version from pubspec.yaml..."
+          $versionLine = Get-Content "..\..\pubspec.yaml" | Select-String "version:"
+          Write-Host "Version line: $versionLine"
+          
+          # Debug NSIS installation
+          Write-Host "NSIS installation path check:"
+          if (Test-Path -Path "$env:ProgramFiles\NSIS") {
+            Write-Host "NSIS found at $env:ProgramFiles\NSIS"
+            Get-ChildItem -Path "$env:ProgramFiles\NSIS" | Select-Object Name
+          } else {
+            Write-Host "NSIS not found at expected location"
+          }
+          
+          # Run installer script with detailed output
+          Write-Host "Running NSIS script..."
+          makensis /V4 installer.nsi
+          
+          # Check if version.txt was created
+          if (Test-Path -Path "version.txt") {
+            Write-Host "version.txt created with content: $(Get-Content -Path 'version.txt')"
+          } else {
+            Write-Host "version.txt not created"
+          }
+          
       - name: List build directory contents
         run: |
           Write-Host "Looking for installer files..."
+          Write-Host "All EXE files in build directory:"
           Get-ChildItem -Path build -Recurse -Include *.exe | Select-Object FullName, Name, Length, LastWriteTime
+          
           Write-Host "Checking if installer file exists..."
-          $installerPath = "build\windows\Computer-Interact-Thing-Installer-*.exe"
-          if (Test-Path -Path $installerPath) {
-            Write-Host "Found installer at: $installerPath"
-            Get-ChildItem -Path $installerPath | Select-Object FullName, Name, Length, LastWriteTime
+          $installerPattern = "build\windows\Computer-Interact-Thing-Installer-*.exe"
+          $alternatePattern = "build\windows\Computer*.exe"
+          
+          Write-Host "Checking pattern: $installerPattern"
+          if (Test-Path -Path $installerPattern) {
+            Write-Host "Found installer at: $installerPattern"
+            $installerFiles = Get-ChildItem -Path $installerPattern
+            $installerFiles | Select-Object FullName, Name, Length, LastWriteTime
           } else {
-            Write-Host "Installer not found at expected path: $installerPath"
-            Write-Host "Listing contents of build\windows:"
-            Get-ChildItem -Path build\windows | Select-Object FullName, Name
+            Write-Host "Installer not found with primary pattern"
+            
+            Write-Host "Checking alternate pattern: $alternatePattern"
+            if (Test-Path -Path $alternatePattern) {
+              Write-Host "Found files with alternate pattern:"
+              Get-ChildItem -Path $alternatePattern | Select-Object FullName, Name, Length, LastWriteTime
+            } else {
+              Write-Host "No files found with alternate pattern either"
+            }
+            
+            Write-Host "Contents of build\windows directory:"
+            if (Test-Path -Path "build\windows") {
+              Get-ChildItem -Path "build\windows" -Recurse | Select-Object FullName, Name, Length, LastWriteTime
+            } else {
+              Write-Host "build\windows directory doesn't exist"
+              Write-Host "Listing contents of build directory:"
+              Get-ChildItem -Path "build" -Recurse | Select-Object FullName, Name
+            }
           }
+      - name: Prepare for artifact upload
+        id: prepare_artifact
+        run: |
+          # Try to find installer with the expected pattern
+          $primaryPattern = "build/windows/Computer-Interact-Thing-Installer-*.exe"
+          $fallbackPattern = "build/windows/Computer*.exe"
+          
+          $foundFiles = Get-ChildItem -Path $primaryPattern -ErrorAction SilentlyContinue
+          if ($foundFiles) {
+            Write-Host "Found installer with primary pattern"
+            echo "INSTALLER_PATH=$primaryPattern" >> $env:GITHUB_ENV
+          } else {
+            Write-Host "Primary pattern not found, trying fallback pattern"
+            $fallbackFiles = Get-ChildItem -Path $fallbackPattern -ErrorAction SilentlyContinue
+            if ($fallbackFiles) {
+              Write-Host "Found installer with fallback pattern"
+              echo "INSTALLER_PATH=$fallbackPattern" >> $env:GITHUB_ENV
+            } else {
+              Write-Host "No installer files found with either pattern"
+              exit 1
+            }
+          }
+
       - name: Upload Installer Artifact
         uses: actions/upload-artifact@v4
         with:
           name: windows-installer
-          path: "build/windows/Computer-Interact-Thing-Installer-*.exe"
+          path: ${{ env.INSTALLER_PATH }}
           if-no-files-found: error
           overwrite: true
           retention-days: 90
@@ -61,7 +130,7 @@ jobs:
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: softprops/action-gh-release@v1
         with:
-          files: "build/windows/Computer-Interact-Thing-Installer-*.exe"
+          files: ${{ env.INSTALLER_PATH }}
           name: Release ${{ github.sha }}
           tag_name: v${{ github.run_number }}
           draft: false

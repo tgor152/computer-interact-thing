@@ -11,11 +11,13 @@
 !define UNINSTALL_REG_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME}"
 
 # Read version from pubspec.yaml
-!system 'powershell -Command "$version = (Get-Content ..\..\pubspec.yaml | Select-String \"version:\") -replace \"version:\s*\", \"\" -replace \"\+.*\", \"\"; if (!$version) { $version = \"1.0.0\" }; Set-Content -Path \"version.txt\" -Value $version"'
+!system 'powershell -Command "$version = (Get-Content ..\..\pubspec.yaml | Select-String \"version:\") -replace \"version:\s*\", \"\" -replace \"\+.*\", \"\"; if (!$version) { $version = \"1.0.0\" }; Write-Host \"Version detected: $version\"; Set-Content -Path \"version.txt\" -Value $version -Force"'
 !define /file VERSION "version.txt"
 
 # Set output file name and properties
 Name "${APP_NAME}"
+# Ensure the output directory exists
+!system 'powershell -Command "if (!(Test-Path -Path \"..\..\build\windows\")) { New-Item -Path \"..\..\build\windows\" -ItemType Directory -Force; Write-Host \"Created build\windows directory\" }"'
 OutFile "..\..\build\windows\${APP_NAME}-Installer-${VERSION}.exe"
 InstallDir "$PROGRAMFILES\${APP_NAME}"
 InstallDirRegKey HKLM "${UNINSTALL_REG_KEY}" "InstallLocation"
