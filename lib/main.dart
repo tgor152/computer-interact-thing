@@ -129,12 +129,12 @@ class _MyHomePageState extends State<MyHomePage> {
         e.type
       ]);
     }
-    final desktopPath = '${Platform.environment['USERPROFILE']}\\Desktop';
-    final desktopDir = Directory(desktopPath);
-    if (!await desktopDir.exists()) {
-      await desktopDir.create(recursive: true);
+    final downloadsPath = '${Platform.environment['USERPROFILE']}\\Downloads';
+    final downloadsDir = Directory(downloadsPath);
+    if (!await downloadsDir.exists()) {
+      await downloadsDir.create(recursive: true);
     }
-    final file = File('$desktopPath/mouse_events.xlsx');
+    final file = File('$downloadsPath/mouse_events.xlsx');
     await file.writeAsBytes(excel.encode()!);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Exported to ${file.path}')),
