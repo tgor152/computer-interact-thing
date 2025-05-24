@@ -11,7 +11,7 @@
 !define UNINSTALL_REG_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME}"
 
 # Read version from pubspec.yaml
-!system "powershell -Command \"$version = (Get-Content ..\..\pubspec.yaml | Select-String 'version:') -replace 'version:\s*', '' -replace '\+.*', ''; Set-Content -Path 'version.txt' -Value $version\""
+!system 'powershell -Command "$version = (Get-Content ..\..\pubspec.yaml | Select-String \"version:\") -replace \"version:\s*\", \"\" -replace \"\+.*\", \"\"; if (!$version) { $version = \"1.0.0\" }; Set-Content -Path \"version.txt\" -Value $version"'
 !define /file VERSION "version.txt"
 
 # Set output file name and properties
@@ -65,6 +65,12 @@ Section "Install" SecInstall
                 ExecWait '"$0" /S _?=$INSTDIR'
         ${EndIf}
     ${EndIf}
+    
+    # Check if build files exist
+    IfFileExists "${FLUTTER_BUILD_DIR}\computer_interact_thing.exe" BuildFilesExist
+        MessageBox MB_OK "Error: Build files not found. Please build the application first with 'flutter build windows'"
+        Abort
+    BuildFilesExist:
     
     # Install new files
     File /r "${FLUTTER_BUILD_DIR}\*.*"
