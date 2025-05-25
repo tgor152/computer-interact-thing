@@ -6,11 +6,20 @@ on:
   pull_request:
     branches: [ main ]
 
+permissions:
+  contents: write
+  packages: read
+  actions: read
+
 jobs:
   build:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
@@ -308,7 +317,7 @@ jobs:
           
       - name: Create Release
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: build/windows/ComputerInteractInstaller.exe
           name: Release ${{ github.sha }}
