@@ -67,6 +67,9 @@ RequestExecutionLevel admin
 # Set the UI language
 !insertmacro MUI_LANGUAGE "English"
 
+# Variable to store build directory path
+Var BuildDir
+
 # Installer section
 Section "Install" SecInstall
     SetOutPath "$INSTDIR"
@@ -94,24 +97,32 @@ Section "Install" SecInstall
     ${EndIf}
     
     # Check if build files exist
-    IfFileExists "${FLUTTER_BUILD_DIR}\computer_interact_thing.exe" BuildFilesExist
+    IfFileExists "${FLUTTER_BUILD_DIR}\computer_interact_thing.exe" PrimaryPathExists CheckFallbackPath
+    
+    PrimaryPathExists:
+        # Primary path exists
+        StrCpy $BuildDir "${FLUTTER_BUILD_DIR}"
+        Goto ContinueInstall
+        
+    CheckFallbackPath:
         # Write diagnostic info to log
         !system 'powershell -Command "Write-Host \"Build files not found at ${FLUTTER_BUILD_DIR}\computer_interact_thing.exe\"; Write-Host \"Checking other locations...\"; if(Test-Path \"..\..\build\windows\runner\Release\computer_interact_thing.exe\") { Write-Host \"Found at ..\..\build\windows\runner\Release\computer_interact_thing.exe\" } else { Write-Host \"Not found in standard location either\" }"'
         
         # Fallback path check
-        IfFileExists "..\..\build\windows\runner\Release\computer_interact_thing.exe" FallbackBuildFilesExist
-            MessageBox MB_OK "Error: Build files not found. Please build the application first with 'flutter build windows'"
-            Abort
-        FallbackBuildFilesExist:
-            # Use fallback path
-            !define ACTUAL_BUILD_DIR "..\..\build\windows\runner\Release"
-            Goto InstallFiles
-    BuildFilesExist:
-        !define ACTUAL_BUILD_DIR "${FLUTTER_BUILD_DIR}"
+        IfFileExists "..\..\build\windows\runner\Release\computer_interact_thing.exe" FallbackPathExists NoFilesFound
     
-    InstallFiles:
+    FallbackPathExists:
+        # Fallback path exists
+        StrCpy $BuildDir "..\..\build\windows\runner\Release"
+        Goto ContinueInstall
+            
+    NoFilesFound:
+        MessageBox MB_OK "Error: Build files not found. Please build the application first with 'flutter build windows'"
+        Abort
+    
+    ContinueInstall:
     # Install new files
-    File /r "${ACTUAL_BUILD_DIR}\*.*"
+    File /r "$BuildDir\*.*"
     
     # Create shortcut
     CreateDirectory "$SMPROGRAMS\${APP_NAME}"

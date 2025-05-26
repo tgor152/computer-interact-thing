@@ -32,3 +32,8 @@ If you need to build the installer manually:
 4. Run NSIS compiler: `makensis installer.nsi`
 
 The installer will be created in the `build/windows` directory.
+
+## Troubleshooting
+
+- If building with GitHub Actions, make sure the environment variables are properly set for the build paths
+- The installer script includes fallback paths if the primary build path is not found
