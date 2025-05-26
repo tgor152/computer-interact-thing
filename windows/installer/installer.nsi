@@ -94,20 +94,24 @@ Section "Install" SecInstall
     ${EndIf}
     
     # Check if build files exist
-    IfFileExists "${FLUTTER_BUILD_DIR}\computer_interact_thing.exe" BuildFilesExist
+    IfFileExists "${FLUTTER_BUILD_DIR}\computer_interact_thing.exe" 0 CheckFallbackPath
+        # Primary path exists
+        !define ACTUAL_BUILD_DIR "${FLUTTER_BUILD_DIR}"
+        Goto InstallFiles
+        
+    CheckFallbackPath:
         # Write diagnostic info to log
         !system 'powershell -Command "Write-Host \"Build files not found at ${FLUTTER_BUILD_DIR}\computer_interact_thing.exe\"; Write-Host \"Checking other locations...\"; if(Test-Path \"..\..\build\windows\runner\Release\computer_interact_thing.exe\") { Write-Host \"Found at ..\..\build\windows\runner\Release\computer_interact_thing.exe\" } else { Write-Host \"Not found in standard location either\" }"'
         
         # Fallback path check
-        IfFileExists "..\..\build\windows\runner\Release\computer_interact_thing.exe" FallbackBuildFilesExist
-            MessageBox MB_OK "Error: Build files not found. Please build the application first with 'flutter build windows'"
-            Abort
-        FallbackBuildFilesExist:
-            # Use fallback path
+        IfFileExists "..\..\build\windows\runner\Release\computer_interact_thing.exe" 0 NoFilesFound
+            # Fallback path exists
             !define ACTUAL_BUILD_DIR "..\..\build\windows\runner\Release"
             Goto InstallFiles
-    BuildFilesExist:
-        !define ACTUAL_BUILD_DIR "${FLUTTER_BUILD_DIR}"
+            
+    NoFilesFound:
+        MessageBox MB_OK "Error: Build files not found. Please build the application first with 'flutter build windows'"
+        Abort
     
     InstallFiles:
     # Install new files
