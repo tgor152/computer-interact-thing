@@ -67,6 +67,9 @@ RequestExecutionLevel admin
 # Set the UI language
 !insertmacro MUI_LANGUAGE "English"
 
+# Variable to store build directory path
+Var BuildDir
+
 # Installer section
 Section "Install" SecInstall
     SetOutPath "$INSTDIR"
@@ -92,9 +95,6 @@ Section "Install" SecInstall
                 ExecWait '"$0" /S _?=$INSTDIR'
         ${EndIf}
     ${EndIf}
-    
-    # Variable to store build directory path
-    Var BuildDir
     
     # Check if build files exist
     IfFileExists "${FLUTTER_BUILD_DIR}\computer_interact_thing.exe" PrimaryPathExists CheckFallbackPath
