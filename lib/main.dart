@@ -123,7 +123,6 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> _exportToExcel() async {
-    final context = this.context;
     final excel = Excel.createExcel();
     final sheet = excel['MouseEvents'];
     sheet.appendRow(['Timestamp', 'X', 'Y', 'Type']);
@@ -142,6 +141,10 @@ class _MyHomePageState extends State<MyHomePage> {
     }
     final file = File('$downloadsPath/mouse_events.xlsx');
     await file.writeAsBytes(excel.encode()!);
+    
+    // Check if the widget is still mounted before using the context
+    if (!mounted) return;
+    
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Exported to ${file.path}')),
     );
