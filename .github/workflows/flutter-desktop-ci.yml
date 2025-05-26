@@ -30,29 +30,20 @@ jobs:
       - name: Run tests
         run: flutter test
       - name: Build Windows app
-        run: flutter build windows
+        run: |
+          Write-Host "Building Flutter Windows application..."
+          flutter build windows
+          if ($LASTEXITCODE -ne 0) {
+            Write-Host "❌ Flutter build command failed with exit code: $LASTEXITCODE"
+            exit $LASTEXITCODE
+          }
+          Write-Host "✅ Flutter build command completed successfully"
       - name: Verify Flutter build output
         run: |
           Write-Host "Verifying Flutter build output..."
           
           $releasePath = "build\windows\runner\Release"
-          if (Test-Path -Path $releasePath) {
-            Write-Host "✅ Flutter build output directory exists: $releasePath"
-            Get-ChildItem -Path $releasePath | Select-Object Name, Length, LastWriteTime
-            
-            # Check for executable
-            if (Test-Path -Path "$releasePath\computer_interact_thing.exe") {
-              $exeInfo = Get-Item -Path "$releasePath\computer_interact_thing.exe"
-              Write-Host "✅ Flutter executable found:"
-              Write-Host "  Path: $($exeInfo.FullName)"
-              Write-Host "  Size: $($exeInfo.Length) bytes"
-              Write-Host "  Last modified: $($exeInfo.LastWriteTime)"
-            } else {
-              Write-Host "❌ Flutter executable not found in release directory"
-              Write-Host "Listing all .exe files in build directory:"
-              Get-ChildItem -Path "build" -Recurse -Include *.exe | Select-Object FullName
-            }
-          } else {
+          if (-not (Test-Path -Path $releasePath)) {
             Write-Host "❌ Flutter build output directory not found: $releasePath"
             Write-Host "Contents of build directory:"
             if (Test-Path -Path "build") {
@@ -60,10 +51,25 @@ jobs:
             } else {
               Write-Host "build directory doesn't exist!"
             }
-            
-            # Don't fail yet, continue with NSIS installation
-            Write-Host "Will continue with NSIS installation despite missing Flutter build output"
+            exit 1
           }
+          
+          Write-Host "✅ Flutter build output directory exists: $releasePath"
+          Get-ChildItem -Path $releasePath | Select-Object Name, Length, LastWriteTime
+          
+          # Check for executable
+          if (-not (Test-Path -Path "$releasePath\computer_interact_thing.exe")) {
+            Write-Host "❌ Flutter executable not found in release directory"
+            Write-Host "Listing all .exe files in build directory:"
+            Get-ChildItem -Path "build" -Recurse -Include *.exe | Select-Object FullName
+            exit 1
+          }
+          
+          $exeInfo = Get-Item -Path "$releasePath\computer_interact_thing.exe"
+          Write-Host "✅ Flutter executable found:"
+          Write-Host "  Path: $($exeInfo.FullName)"
+          Write-Host "  Size: $($exeInfo.Length) bytes"
+          Write-Host "  Last modified: $($exeInfo.LastWriteTime)"
       
       - name: Install NSIS
         run: |
