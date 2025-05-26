@@ -3,9 +3,8 @@ import 'dart:ffi' as ffi;
 import 'package:ffi/ffi.dart';
 import 'dart:io';
 import 'package:excel/excel.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:win32/win32.dart';
 import 'package:flutter/material.dart';
+import 'package:win32/win32.dart';
 import 'dart:math';
 
 void main() {
@@ -70,7 +69,7 @@ class MouseEvent {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  List<MouseEvent> _events = [];
+  final List<MouseEvent> _events = [];
   int _clickCount = 0;
   double _distance = 0.0;
   Timer? _moveTimer;
@@ -124,6 +123,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> _exportToExcel() async {
+    final context = this.context;
     final excel = Excel.createExcel();
     final sheet = excel['MouseEvents'];
     sheet.appendRow(['Timestamp', 'X', 'Y', 'Type']);
