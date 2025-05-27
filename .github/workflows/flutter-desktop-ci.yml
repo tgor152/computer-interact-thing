@@ -50,13 +50,15 @@ jobs:
 
       - name: Verify Installer File
         run: |
-          if (!(Test-Path "windows/installer/installer.nsi")) {
-            Write-Error "Error: windows/installer/installer.nsi not found!"
+          if (!(Test-Path "../windows/installer/installer.nsi")) {
+            Write-Error "Error: ../windows/installer/installer.nsi not found!"
             exit 1
+          } else {
+            Write-Host "installer.nsi found successfully."
           }
         working-directory: ./computer_interact_thing
 
       - name: Create Windows installer
         run: |
-          & "C:\Program Files (x86)\NSIS\makensis.exe" windows/installer/installer.nsi
+          & "C:\Program Files (x86)\NSIS\makensis.exe" ../windows/installer/installer.nsi
         working-directory: ./computer_interact_thing
