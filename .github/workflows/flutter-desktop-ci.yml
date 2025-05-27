@@ -33,3 +33,10 @@ jobs:
       - name: Build Windows app
         run: flutter build windows
         working-directory: ./computer_interact_thing
+
+      - name: Install NSIS
+        run: choco install nsis -y
+
+      - name: Create Windows installer
+        run: '"C:\\Program Files (x86)\\NSIS\\makensis.exe" windows/installer/installer.nsi'
+        working-directory: ./computer_interact_thing
