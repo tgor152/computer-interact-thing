@@ -7,21 +7,10 @@
 
 # Define application name, version, and publisher
 !define APP_NAME "Computer Interact Thing"
-!define FLUTTER_BUILD_DIR "$%FLUTTER_BUILD_DIR%"
-!define INSTALLER_OUTPUT_DIR "$%INSTALLER_OUTPUT_DIR%"
-!define INSTALLER_FILENAME "$%INSTALLER_FILENAME%"
+!define FLUTTER_BUILD_DIR "..\..\computer_interact_thing\build\windows\x64\runner\Release"
+!define INSTALLER_OUTPUT_DIR "..\..\computer_interact_thing\build\windows"
+!define INSTALLER_FILENAME "ComputerInteractInstaller.exe"
 !define UNINSTALL_REG_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME}"
-
-# Use fallback paths if environment variables not set
-!ifndef FLUTTER_BUILD_DIR
-  !define FLUTTER_BUILD_DIR "..\..\build\windows\runner\Release"
-!endif
-!ifndef INSTALLER_OUTPUT_DIR
-  !define INSTALLER_OUTPUT_DIR "..\..\build\windows"
-!endif
-!ifndef INSTALLER_FILENAME
-  !define INSTALLER_FILENAME "ComputerInteractInstaller.exe"
-!endif
 
 # Read version from pubspec.yaml or use default
 !system 'powershell -Command "$version = \"1.0.0\"; try { if(Test-Path \"version.txt\") { $version = Get-Content \"version.txt\" } elseif(Test-Path \"..\..\pubspec.yaml\") { $version = (Get-Content \"..\..\pubspec.yaml\" | Select-String \"version:\") -replace \"version:\s*\", \"\" -replace \"\+.*\", \"\"; if(!$version) { $version = \"1.0.0\" } } } catch { Write-Host \"Error: $_\"; }; Write-Host \"Version: $version\"; Set-Content -Path \"version.txt\" -Value $version -Force"'
@@ -76,25 +65,25 @@ Section "Install" SecInstall
     ${If} $0 != ""
         # Get current version
         ReadRegStr $1 HKLM "${UNINSTALL_REG_KEY}" "DisplayVersion"
-        
-        # Compare versions
+          # Compare versions
         ${If} $1 == "${VERSION}"
             MessageBox MB_YESNO "Version ${VERSION} is already installed. Do you want to reinstall?" IDYES reinstall IDNO abort
             abort:
                 Abort
             reinstall:
                 # Run the uninstaller
-                ExecWait '"$0" /S _?=$INSTDIR'        ${Else}
+                ExecWait '$0 /S _?=$INSTDIR'
+        ${Else}
             MessageBox MB_YESNO "Version $1 is already installed. Do you want to upgrade to version ${VERSION}?" IDYES upgrade IDNO abort
             upgrade:
                 # Run the uninstaller
-                ExecWait '"$0" /S _?=$INSTDIR'
+                ExecWait '$0 /S _?=$INSTDIR'
         ${EndIf}
     ${EndIf}
-    
-    # Check if build files exist - check multiple possible locations
+      # Check if build files exist - check multiple possible locations
     IfFileExists "${FLUTTER_BUILD_DIR}\computer_interact_thing.exe" UseFlutterBuildDir 0
-    IfFileExists "..\..\build\windows\runner\Release\computer_interact_thing.exe" UseStandardPath 0    IfFileExists "..\..\build\windows\x64\runner\Release\computer_interact_thing.exe" UseX64Path NoFilesFound
+    IfFileExists "..\..\build\windows\runner\Release\computer_interact_thing.exe" UseStandardPath 0
+    IfFileExists "..\..\build\windows\x64\runner\Release\computer_interact_thing.exe" UseX64Path NoFilesFound
     
     UseFlutterBuildDir:
         File "${FLUTTER_BUILD_DIR}\computer_interact_thing.exe"
