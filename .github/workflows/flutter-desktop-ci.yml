@@ -8,7 +8,8 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest    env:
+    runs-on: windows-latest
+    env:
       FLUTTER_BUILD_DIR: build/windows/x64/runner/Release
       INSTALLER_OUTPUT_DIR: build/windows
       INSTALLER_FILENAME: ComputerInteractInstaller.exe
