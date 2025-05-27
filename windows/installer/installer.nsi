@@ -67,9 +67,6 @@ RequestExecutionLevel admin
 # Set the UI language
 !insertmacro MUI_LANGUAGE "English"
 
-# Variable to store build directory path
-Var BuildDir
-
 # Installer section
 Section "Install" SecInstall
     SetOutPath "$INSTDIR"
@@ -95,48 +92,59 @@ Section "Install" SecInstall
                 ExecWait '"$0" /S _?=$INSTDIR'
         ${EndIf}
     ${EndIf}
-    
-    # Check if build files exist - check multiple possible locations
-    IfFileExists "${FLUTTER_BUILD_DIR}\computer_interact_thing.exe" PrimaryPathExists CheckFallbackPath1
-    
-    PrimaryPathExists:
-        # Primary path exists
-        StrCpy $BuildDir "${FLUTTER_BUILD_DIR}"
-        Goto ContinueInstall
+      # Check if build files exist - check multiple possible locations
+    IfFileExists "${FLUTTER_BUILD_DIR}\computer_interact_thing.exe" UseFlutterBuildDir 0
+    IfFileExists "..\..\build\windows\runner\Release\computer_interact_thing.exe" UseStandardPath 0
+    IfFileExists "..\..\build\windows\x64\runner\Release\computer_interact_thing.exe" UseX64Path NoFilesFound
+      UseFlutterBuildDir:
+        File "${FLUTTER_BUILD_DIR}\computer_interact_thing.exe"
+        File "${FLUTTER_BUILD_DIR}\flutter_windows.dll"
+        # Install additional DLLs that might be needed
+        IfFileExists "${FLUTTER_BUILD_DIR}\msvcp140.dll" 0 +2
+        File "${FLUTTER_BUILD_DIR}\msvcp140.dll"
+        IfFileExists "${FLUTTER_BUILD_DIR}\vcruntime140.dll" 0 +2
+        File "${FLUTTER_BUILD_DIR}\vcruntime140.dll"
+        IfFileExists "${FLUTTER_BUILD_DIR}\vcruntime140_1.dll" 0 +2
+        File "${FLUTTER_BUILD_DIR}\vcruntime140_1.dll"
+        IfFileExists "${FLUTTER_BUILD_DIR}\data\*.*" 0 +2
+        File /r "${FLUTTER_BUILD_DIR}\data"
+        Goto ContinueAfterInstall
         
-    CheckFallbackPath1:
-        # Write diagnostic info to log
-        !system 'powershell -Command "Write-Host \"Build files not found at ${FLUTTER_BUILD_DIR}\computer_interact_thing.exe\"; Write-Host \"Checking other locations...\";"'
+    UseStandardPath:
+        File "..\..\build\windows\runner\Release\computer_interact_thing.exe"
+        File "..\..\build\windows\runner\Release\flutter_windows.dll"
+        # Install additional DLLs that might be needed
+        IfFileExists "..\..\build\windows\runner\Release\msvcp140.dll" 0 +2
+        File "..\..\build\windows\runner\Release\msvcp140.dll"
+        IfFileExists "..\..\build\windows\runner\Release\vcruntime140.dll" 0 +2
+        File "..\..\build\windows\runner\Release\vcruntime140.dll"
+        IfFileExists "..\..\build\windows\runner\Release\vcruntime140_1.dll" 0 +2
+        File "..\..\build\windows\runner\Release\vcruntime140_1.dll"
+        IfFileExists "..\..\build\windows\runner\Release\data\*.*" 0 +2
+        File /r "..\..\build\windows\runner\Release\data"
+        Goto ContinueAfterInstall
         
-        # First fallback path check (standard location)
-        IfFileExists "..\..\build\windows\runner\Release\computer_interact_thing.exe" FallbackPath1Exists CheckFallbackPath2
-    
-    FallbackPath1Exists:
-        !system 'powershell -Command "Write-Host \"Found at ..\..\build\windows\runner\Release\computer_interact_thing.exe\""'
-        StrCpy $BuildDir "..\..\build\windows\runner\Release"
-        Goto ContinueInstall
-        
-    CheckFallbackPath2:
-        # Second fallback path check (x64 architecture path)
-        IfFileExists "..\..\build\windows\x64\runner\Release\computer_interact_thing.exe" FallbackPath2Exists NoFilesFound
-        
-    FallbackPath2Exists:
-        !system 'powershell -Command "Write-Host \"Found at ..\..\build\windows\x64\runner\Release\computer_interact_thing.exe\""'
-        StrCpy $BuildDir "..\..\build\windows\x64\runner\Release"
-        Goto ContinueInstall
-            
-    NoFilesFound:
+    UseX64Path:
+        File "..\..\build\windows\x64\runner\Release\computer_interact_thing.exe"
+        File "..\..\build\windows\x64\runner\Release\flutter_windows.dll"
+        # Install additional DLLs that might be needed
+        IfFileExists "..\..\build\windows\x64\runner\Release\msvcp140.dll" 0 +2
+        File "..\..\build\windows\x64\runner\Release\msvcp140.dll"
+        IfFileExists "..\..\build\windows\x64\runner\Release\vcruntime140.dll" 0 +2
+        File "..\..\build\windows\x64\runner\Release\vcruntime140.dll"
+        IfFileExists "..\..\build\windows\x64\runner\Release\vcruntime140_1.dll" 0 +2
+        File "..\..\build\windows\x64\runner\Release\vcruntime140_1.dll"
+        IfFileExists "..\..\build\windows\x64\runner\Release\data\*.*" 0 +2
+        File /r "..\..\build\windows\x64\runner\Release\data"
+        Goto ContinueAfterInstall
+              NoFilesFound:
         # Create a failure marker for diagnostic purposes
         !system 'powershell -Command "try { Set-Content -Path \"${INSTALLER_OUTPUT_DIR}\installer_build_failed.txt\" -Value \"Failed to find executable. Checked: ${FLUTTER_BUILD_DIR}, ..\\..\\build\\windows\\runner\\Release, ..\\..\\build\\windows\\x64\\runner\\Release\" -Force } catch { Write-Host \"Error writing failure marker: $_\" }"'
         
         # Show more detailed error message
-        MessageBox MB_OK|MB_ICONSTOP "Error: Flutter build files not found.$\r$\n$\r$\nChecked locations:$\r$\n- ${FLUTTER_BUILD_DIR}$\r$\n- ..\..\build\windows\runner\Release$\r$\n- ..\..\build\windows\x64\runner\Release$\r$\n$\r$\nPlease build the application with 'flutter build windows' before running the installer."
-        Abort
-    
-    ContinueInstall:
-    # Install new files
-    File /r "$BuildDir\*.*"
-    
+        MessageBox MB_OK|MB_ICONSTOP "Error: Flutter build files not found.$\r$\n$\r$\nChecked locations:$\r$\n- ${FLUTTER_BUILD_DIR}$\r$\n- ..\..\build\windows\runner\Release$\r$\n- ..\..\build\windows\x64\runner\Release$\r$\n$\r$\nPlease build the application with 'flutter build windows' before running the installer."        Abort
+        
+    ContinueAfterInstall:
     # Create shortcut
     CreateDirectory "$SMPROGRAMS\${APP_NAME}"
     CreateShortcut "$SMPROGRAMS\${APP_NAME}\${APP_NAME}.lnk" "$INSTDIR\computer_interact_thing.exe"
