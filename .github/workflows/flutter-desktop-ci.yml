@@ -24,19 +24,19 @@ jobs:
 
       - name: Install dependencies
         run: flutter pub get
-        working-directory: ./computer_interact_thing      
-        
+        working-directory: .
+
       - name: Analyze project
         run: flutter analyze
-        working-directory: ./computer_interact_thing
+        working-directory: .
 
       - name: Run tests
         run: flutter test
-        working-directory: ./computer_interact_thing
+        working-directory: .
 
       - name: Build Windows app
         run: flutter build windows --release
-        working-directory: ./computer_interact_thing
+        working-directory: .
 
       - name: Install NSIS
         run: choco install nsis -y
@@ -46,7 +46,7 @@ jobs:
           echo "FLUTTER_BUILD_DIR=$env:FLUTTER_BUILD_DIR"
           echo "INSTALLER_OUTPUT_DIR=$env:INSTALLER_OUTPUT_DIR"
           echo "INSTALLER_FILENAME=$env:INSTALLER_FILENAME"
-        working-directory: ./computer_interact_thing
+        working-directory: .
 
       - name: Verify Installer File
         run: |
@@ -56,7 +56,7 @@ jobs:
           } else {
             Write-Host "installer.nsi found successfully."
           }
-        working-directory: ./computer_interact_thing
+        working-directory: .
 
       - name: Debug Build Output
         run: |
@@ -72,12 +72,12 @@ jobs:
             if (!($?)) { # Check if the previous command found anything
                 echo "computer_interact_thing.exe not found anywhere in build/windows"            }
           }
-        working-directory: ./computer_interact_thing
+        working-directory: .
 
       - name: Create Windows installer
         run: |
           & "C:\Program Files (x86)\NSIS\makensis.exe" ../windows/installer/installer.nsi
-        working-directory: ./computer_interact_thing
+        working-directory: .
 
       - name: Upload Windows installer artifact
         uses: actions/upload-artifact@v4
