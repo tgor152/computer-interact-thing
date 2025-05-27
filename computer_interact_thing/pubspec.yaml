@@ -37,6 +37,7 @@ dependencies:
   excel: ^2.1.0
   win32: ^5.0.9
   path_provider: ^2.1.2
+  ffi: ^2.1.4
 
 dev_dependencies:
   flutter_test:
