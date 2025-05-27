@@ -46,9 +46,7 @@ jobs:
           echo "FLUTTER_BUILD_DIR=$env:FLUTTER_BUILD_DIR"
           echo "INSTALLER_OUTPUT_DIR=$env:INSTALLER_OUTPUT_DIR"
           echo "INSTALLER_FILENAME=$env:INSTALLER_FILENAME"
-        working-directory: ./computer_interact_thing
-
-      - name: Verify Installer File
+        working-directory: ./computer_interact_thing      - name: Verify Installer File
         run: |
           if (!(Test-Path "../windows/installer/installer.nsi")) {
             Write-Error "Error: ../windows/installer/installer.nsi not found!"
@@ -73,9 +71,7 @@ jobs:
                 echo "computer_interact_thing.exe not found anywhere in build/windows"
             }
           }
-        working-directory: ./computer_interact_thing
-
-      - name: Create Windows installer
+        working-directory: ./computer_interact_thing      - name: Create Windows installer
         run: |
           & "C:\Program Files (x86)\NSIS\makensis.exe" ../windows/installer/installer.nsi
         working-directory: ./computer_interact_thing

@@ -84,12 +84,12 @@ Section "Install" SecInstall
                 Abort
             reinstall:
                 # Run the uninstaller
-                ExecWait '"$0" /S _?=$INSTDIR'
-        ${Else}
+                ExecWait '"$0" /S _?=$INSTDIR'        ${Else}
             MessageBox MB_YESNO "Version $1 is already installed. Do you want to upgrade to version ${VERSION}?" IDYES upgrade IDNO abort
             upgrade:
                 # Run the uninstaller
-                ExecWait '"$0" /S _?=$INSTDIR'        ${EndIf}
+                ExecWait '"$0" /S _?=$INSTDIR'
+        ${EndIf}
     ${EndIf}
     
     # Check if build files exist - check multiple possible locations
