@@ -96,28 +96,55 @@ Section "Install" SecInstall
         ${EndIf}
     ${EndIf}
     
-    # Check if build files exist
-    IfFileExists "${FLUTTER_BUILD_DIR}\computer_interact_thing.exe" PrimaryPathExists CheckFallbackPath
+    # Check if build files exist - check multiple possible locations
+    IfFileExists "${FLUTTER_BUILD_DIR}\computer_interact_thing.exe" PrimaryPathExists CheckFallbackPath1
     
     PrimaryPathExists:
         # Primary path exists
         StrCpy $BuildDir "${FLUTTER_BUILD_DIR}"
         Goto ContinueInstall
         
-    CheckFallbackPath:
+    CheckFallbackPath1:
         # Write diagnostic info to log
-        !system 'powershell -Command "Write-Host \"Build files not found at ${FLUTTER_BUILD_DIR}\computer_interact_thing.exe\"; Write-Host \"Checking other locations...\"; if(Test-Path \"..\..\build\windows\runner\Release\computer_interact_thing.exe\") { Write-Host \"Found at ..\..\build\windows\runner\Release\computer_interact_thing.exe\" } else { Write-Host \"Not found in standard location either\" }"'
+        !system 'powershell -Command "Write-Host \"Build files not found at ${FLUTTER_BUILD_DIR}\computer_interact_thing.exe\"; Write-Host \"Checking other locations...\";"'
         
-        # Fallback path check
-        IfFileExists "..\..\build\windows\runner\Release\computer_interact_thing.exe" FallbackPathExists NoFilesFound
+        # First fallback path check (standard location)
+        IfFileExists "..\..\build\windows\runner\Release\computer_interact_thing.exe" FallbackPath1Exists CheckFallbackPath2
     
-    FallbackPathExists:
-        # Fallback path exists
+    FallbackPath1Exists:
+        !system 'powershell -Command "Write-Host \"Found at ..\..\build\windows\runner\Release\computer_interact_thing.exe\""'
         StrCpy $BuildDir "..\..\build\windows\runner\Release"
+        Goto ContinueInstall
+        
+    CheckFallbackPath2:
+        # Second fallback path check (x64 architecture path)
+        IfFileExists "..\..\build\windows\x64\runner\Release\computer_interact_thing.exe" FallbackPath2Exists CheckOtherLocations
+        
+    FallbackPath2Exists:
+        !system 'powershell -Command "Write-Host \"Found at ..\..\build\windows\x64\runner\Release\computer_interact_thing.exe\""'
+        StrCpy $BuildDir "..\..\build\windows\x64\runner\Release"
+        Goto ContinueInstall
+        
+    CheckOtherLocations:
+        # Search in build directory for the executable
+        !system 'powershell -Command "$files = Get-ChildItem -Path ..\..\build -Recurse -Include \"computer_interact_thing.exe\" -ErrorAction SilentlyContinue; if ($files.Count -gt 0) { Write-Host \"Found executable at: $($files[0].FullName)\"; Set-Content -Path \"found_path.txt\" -Value $($files[0].Directory.FullName) } else { Write-Host \"No executable found in any location\" }"'
+        
+        # Check if we found a path
+        IfFileExists "found_path.txt" UseFoundPath NoFilesFound
+        
+    UseFoundPath:
+        # Use the path we found
+        !define /file FOUND_PATH "found_path.txt"
+        !system 'powershell -Command "Write-Host \"Using found path: ${FOUND_PATH}\""'
+        StrCpy $BuildDir "${FOUND_PATH}"
         Goto ContinueInstall
             
     NoFilesFound:
-        MessageBox MB_OK "Error: Build files not found. Please build the application first with 'flutter build windows'"
+        # Create a failure marker for diagnostic purposes
+        !system 'powershell -Command "try { Set-Content -Path \"${INSTALLER_OUTPUT_DIR}\installer_build_failed.txt\" -Value \"Failed to find executable. Checked: ${FLUTTER_BUILD_DIR}, ..\\..\\build\\windows\\runner\\Release, ..\\..\\build\\windows\\x64\\runner\\Release\" -Force } catch { Write-Host \"Error writing failure marker: $_\" }"'
+        
+        # Show more detailed error message
+        MessageBox MB_OK|MB_ICONSTOP "Error: Flutter build files not found.$\r$\n$\r$\nChecked locations:$\r$\n- ${FLUTTER_BUILD_DIR}$\r$\n- ..\..\build\windows\runner\Release$\r$\n- ..\..\build\windows\x64\runner\Release$\r$\n$\r$\nPlease build the application with 'flutter build windows' before running the installer."
         Abort
     
     ContinueInstall:
