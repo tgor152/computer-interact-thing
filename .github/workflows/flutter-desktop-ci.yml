@@ -10,7 +10,7 @@ jobs:
   build:
     runs-on: windows-latest
     env:
-      FLUTTER_BUILD_DIR: build/windows/runner/Release
+      FLUTTER_BUILD_DIR: build/windows/x64/runner/Release
       INSTALLER_OUTPUT_DIR: build/windows
       INSTALLER_FILENAME: ComputerInteractInstaller.exe
     steps:
@@ -58,7 +58,30 @@ jobs:
           }
         working-directory: ./computer_interact_thing
 
+      - name: Debug Build Output
+        run: |
+          echo "Listing contents of $env:FLUTTER_BUILD_DIR (expected: computer_interact_thing\\build\\windows\\x64\\runner\\Release)"
+          dir "$env:FLUTTER_BUILD_DIR"
+          echo "Expected executable: $env:FLUTTER_BUILD_DIR\\computer_interact_thing.exe"
+          if (Test-Path "$env:FLUTTER_BUILD_DIR\\computer_interact_thing.exe") {
+            echo "Executable FOUND at $env:FLUTTER_BUILD_DIR\\computer_interact_thing.exe"
+          } else {
+            echo "Executable NOT FOUND at $env:FLUTTER_BUILD_DIR\\computer_interact_thing.exe"
+            echo "Searching for computer_interact_thing.exe in entire build/windows directory..."
+            dir build\\windows -Recurse -Filter computer_interact_thing.exe -ErrorAction SilentlyContinue
+            if (!($?)) { # Check if the previous command found anything
+                echo "computer_interact_thing.exe not found anywhere in build/windows"
+            }
+          }
+        working-directory: ./computer_interact_thing
+
       - name: Create Windows installer
         run: |
           & "C:\Program Files (x86)\NSIS\makensis.exe" ../windows/installer/installer.nsi
         working-directory: ./computer_interact_thing
+
+      - name: Upload Windows installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: WindowsInstaller
+          path: ./computer_interact_thing/build/windows/ComputerInteractInstaller.exe
