@@ -35,7 +35,7 @@ jobs:
         working-directory: ./computer_interact_thing
 
       - name: Build Windows app
-        run: flutter build windows
+        run: flutter build windows --release
         working-directory: ./computer_interact_thing
 
       - name: Install NSIS
