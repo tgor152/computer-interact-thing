@@ -36,10 +36,10 @@ jobs:
 
       - name: Build Windows app
         run: flutter build windows --release
-        working-directory: ./computer_interact_thing
+        working-directory: ./computer_interact_thing      - name: Install NSIS
+        run: choco install nsis -y
 
-      - name: Install NSIS
-        run: choco install nsis -y      - name: Debug Paths
+      - name: Debug Paths
         run: |
           echo "FLUTTER_BUILD_DIR=$env:FLUTTER_BUILD_DIR"
           echo "INSTALLER_OUTPUT_DIR=$env:INSTALLER_OUTPUT_DIR"
