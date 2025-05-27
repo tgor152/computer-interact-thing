@@ -76,6 +76,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Timer? _clickTimer;
   int? _lastX;
   int? _lastY;
+  bool _wasMouseDown = false;
 
   @override
   void initState() {
@@ -101,18 +102,18 @@ class _MyHomePageState extends State<MyHomePage> {
       setState(() {});
     });
     _clickTimer = Timer.periodic(const Duration(milliseconds: 50), (_) {
-      if ((GetAsyncKeyState(VK_LBUTTON) & 0x8000) != 0) {
-        if (_events.isEmpty || _events.last.type != 'click') {
-          final pt = calloc<POINT>();
-          GetCursorPos(pt);
-          final x = pt.ref.x;
-          final y = pt.ref.y;
-          calloc.free(pt);
-          _events.add(MouseEvent(DateTime.now(), x, y, 'click'));
-          _clickCount++;
-          setState(() {});
-        }
+      final isDown = (GetAsyncKeyState(VK_LBUTTON) & 0x8000) != 0;
+      if (isDown && !_wasMouseDown) {
+        final pt = calloc<POINT>();
+        GetCursorPos(pt);
+        final x = pt.ref.x;
+        final y = pt.ref.y;
+        calloc.free(pt);
+        _events.add(MouseEvent(DateTime.now(), x, y, 'click'));
+        _clickCount++;
+        setState(() {});
       }
+      _wasMouseDown = isDown;
     });
   }
 
