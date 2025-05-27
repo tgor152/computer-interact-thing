@@ -143,16 +143,42 @@ jobs:
           if (-not $executableFound) {
             Write-Host "❌ Flutter executable not found in any expected location"
             Write-Host "Listing all .exe files in build directory to find the actual location:"
-            Get-ChildItem -Path "build" -Recurse -Include *.exe | Select-Object FullName
+            $foundExes = Get-ChildItem -Path "build" -Recurse -Include *.exe | Select-Object FullName
+            
+            if ($foundExes.Count -gt 0) {
+              Write-Host "Found some executables in build directory:"
+              foreach ($exe in $foundExes) {
+                Write-Host "  $($exe.FullName)"
+                # If we find the target executable, use its location
+                if ($exe.FullName -match "computer_interact_thing\.exe$") {
+                  $validReleasePath = Split-Path -Parent $exe.FullName
+                  $executableFound = $true
+                  Write-Host "✅ Found target executable at: $($exe.FullName)"
+                  Write-Host "Using directory: $validReleasePath"
+                  break
+                }
+              }
+            }
             
             # Extra diagnostic - look for other build artifacts that might indicate where the build went
             Write-Host "Looking for Flutter build artifacts to determine build location:"
             Get-ChildItem -Path "build" -Recurse -Include "flutter_windows.dll", "*.so", "*.dll", "*.dat" -ErrorAction SilentlyContinue | Select-Object FullName
             
-            exit 1
-          } else {
-            # Set environment variable for use in later steps
+            if (-not $executableFound) {
+              exit 1
+            }
+          }
+          
+          # Set environment variable for use in later steps
+          if ($validReleasePath) {
+            # Convert to relative path from the installer directory perspective
+            $relativePath = $validReleasePath -replace [regex]::Escape((Get-Location)), ".."
             echo "RELEASE_PATH=$validReleasePath" | Out-File -FilePath $env:GITHUB_ENV -Append
+            echo "RELATIVE_RELEASE_PATH=$relativePath" | Out-File -FilePath $env:GITHUB_ENV -Append
+            
+            Write-Host "Release paths set:"
+            Write-Host "RELEASE_PATH=$validReleasePath"
+            Write-Host "RELATIVE_RELEASE_PATH=$relativePath"
           }
       
       - name: Install NSIS
@@ -263,6 +289,64 @@ jobs:
             Write-Host "❌ Error saving version files: $_"
           }
       
+      - name: Copy executable to expected locations
+        run: |
+          Write-Host "Ensuring executable is available in all expected locations..."
+          
+          # Define all possible build output paths
+          $possiblePaths = @(
+            "build\windows\runner\Release",
+            "build\windows\x64\runner\Release"
+          )
+          
+          # Find where the executable actually is
+          $executablePath = $null
+          foreach ($path in $possiblePaths) {
+            if (Test-Path -Path "$path\computer_interact_thing.exe") {
+              $executablePath = "$path\computer_interact_thing.exe"
+              Write-Host "✅ Found executable at: $executablePath"
+              break
+            }
+          }
+          
+          # If not found in standard locations, search everywhere
+          if (-not $executablePath) {
+            Write-Host "Searching for executable in entire build directory..."
+            $foundFiles = Get-ChildItem -Path "build" -Recurse -Include "computer_interact_thing.exe" -ErrorAction SilentlyContinue
+            if ($foundFiles.Count -gt 0) {
+              $executablePath = $foundFiles[0].FullName
+              Write-Host "✅ Found executable at non-standard location: $executablePath"
+            } else {
+              Write-Host "❌ Executable not found anywhere in the build directory!"
+            }
+          }
+          
+          # If found, copy to all expected locations to ensure the installer can find it
+          if ($executablePath) {
+            foreach ($path in $possiblePaths) {
+              if (-not (Test-Path -Path "$path\computer_interact_thing.exe")) {
+                # Ensure directory exists
+                if (-not (Test-Path -Path $path)) {
+                  Write-Host "Creating directory: $path"
+                  New-Item -Path $path -ItemType Directory -Force | Out-Null
+                }
+                
+                # Copy executable
+                Write-Host "Copying executable to: $path\computer_interact_thing.exe"
+                Copy-Item -Path $executablePath -Destination "$path\computer_interact_thing.exe" -Force
+                
+                # Copy required DLLs if they exist in the original location
+                $sourceDir = Split-Path -Parent $executablePath
+                if (Test-Path -Path "$sourceDir\*.dll") {
+                  Write-Host "Copying DLLs to: $path"
+                  Copy-Item -Path "$sourceDir\*.dll" -Destination $path -Force
+                }
+                
+                Write-Host "✅ Copied executable and dependencies to: $path"
+              }
+            }
+          }
+      
       - name: Build Windows Installer
         run: |
           Write-Host "Building Windows Installer..."
@@ -286,11 +370,26 @@ jobs:
           # Set environment variables to help NSIS
           if ($env:RELEASE_PATH) {
             Write-Host "Using detected release path: $env:RELEASE_PATH"
-            $env:FLUTTER_BUILD_DIR = $env:RELEASE_PATH
+            
+            # For NSIS, we need to convert to a relative path from the installer directory
+            if ($env:RELATIVE_RELEASE_PATH) {
+              $env:FLUTTER_BUILD_DIR = $env:RELATIVE_RELEASE_PATH
+              Write-Host "Using relative path for NSIS: $env:FLUTTER_BUILD_DIR"
+            } else {
+              $env:FLUTTER_BUILD_DIR = $env:RELEASE_PATH
+              Write-Host "Using absolute path for NSIS: $env:FLUTTER_BUILD_DIR"
+            }
           } else {
             Write-Host "Using default release path fallback"
             $env:FLUTTER_BUILD_DIR = "..\..\build\windows\runner\Release"
           }
+          
+          # Create a diagnostic file with the paths we're using
+          Set-Content -Path "build_paths.txt" -Value @"
+          RELEASE_PATH: $env:RELEASE_PATH
+          RELATIVE_RELEASE_PATH: $env:RELATIVE_RELEASE_PATH
+          FLUTTER_BUILD_DIR: $env:FLUTTER_BUILD_DIR
+"@ -Force
           
           $env:INSTALLER_OUTPUT_DIR = "..\..\build\windows"
           $env:INSTALLER_FILENAME = "ComputerInteractInstaller.exe"
