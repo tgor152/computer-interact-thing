@@ -9,6 +9,10 @@ on:
 jobs:
   build:
     runs-on: windows-latest
+    env:
+      FLUTTER_BUILD_DIR: build/windows/runner/Release
+      INSTALLER_OUTPUT_DIR: build/windows
+      INSTALLER_FILENAME: ComputerInteractInstaller.exe
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -36,6 +40,21 @@ jobs:
 
       - name: Install NSIS
         run: choco install nsis -y
+
+      - name: Debug Paths
+        run: |
+          echo "FLUTTER_BUILD_DIR=$env:FLUTTER_BUILD_DIR"
+          echo "INSTALLER_OUTPUT_DIR=$env:INSTALLER_OUTPUT_DIR"
+          echo "INSTALLER_FILENAME=$env:INSTALLER_FILENAME"
+        working-directory: ./computer_interact_thing
+
+      - name: Verify Installer File
+        run: |
+          if (!(Test-Path "windows/installer/installer.nsi")) {
+            Write-Error "Error: windows/installer/installer.nsi not found!"
+            exit 1
+          }
+        working-directory: ./computer_interact_thing
 
       - name: Create Windows installer
         run: |
