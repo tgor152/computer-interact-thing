@@ -29,6 +29,43 @@ jobs:
         run: flutter analyze
       - name: Run tests
         run: flutter test
+      - name: Check Windows development setup
+        run: |
+          Write-Host "Checking Windows development environment..."
+          
+          # Check Visual Studio installation
+          Write-Host "Checking Visual Studio installation..."
+          $vsWhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+          if (Test-Path $vsWhere) {
+            & $vsWhere -all -products * -format json | ConvertFrom-Json | Select-Object displayName, installationVersion, installationPath
+          } else {
+            Write-Host "vswhere.exe not found at expected location. Checking alternative paths..."
+            $vsWhereAlt = Get-ChildItem -Path "C:\" -Recurse -Include "vswhere.exe" -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName
+            if ($vsWhereAlt) {
+              Write-Host "Found vswhere at: $vsWhereAlt"
+              & $vsWhereAlt -all -products * -format json | ConvertFrom-Json | Select-Object displayName, installationVersion, installationPath
+            } else {
+              Write-Host "vswhere.exe not found."
+            }
+          }
+          
+          # Check Windows SDK
+          Write-Host "Checking Windows SDK installation..."
+          $sdkRegPath = "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Microsoft SDKs\Windows\v10.0"
+          if (Test-Path $sdkRegPath) {
+            Get-ItemProperty -Path $sdkRegPath | Select-Object ProductVersion, InstallationFolder
+          } else {
+            Write-Host "Windows SDK registry path not found."
+          }
+          
+          # Check CMake installation
+          Write-Host "Checking CMake installation..."
+          try {
+            cmake --version
+          } catch {
+            Write-Host "CMake not found in PATH."
+          }
+      
       - name: Flutter doctor
         run: |
           Write-Host "Running Flutter doctor to check environment..."
@@ -38,7 +75,22 @@ jobs:
         run: |
           Write-Host "Building Flutter Windows application..."
           Write-Host "Running flutter build windows with --release and --verbose flags..."
-          flutter build windows --release --verbose
+          
+          # Explicitly set architecture to x64 and build mode to release
+          flutter config --enable-windows-desktop
+          
+          # Generate VS project files first, then build
+          Write-Host "Generating Visual Studio project files..."
+          flutter pub get
+          
+          # Explicitly clean and prepare for Windows build
+          Write-Host "Cleaning previous build artifacts..."
+          flutter clean
+          
+          # Build the Windows app
+          Write-Host "Building Windows application..."
+          flutter build windows --release --verbose --target-platform windows-x64
+          
           if ($LASTEXITCODE -ne 0) {
             Write-Host "❌ Flutter build command failed with exit code: $LASTEXITCODE"
             exit $LASTEXITCODE
