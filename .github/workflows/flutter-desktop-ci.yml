@@ -24,11 +24,13 @@ jobs:
 
       - name: Install dependencies
         run: flutter pub get
-        working-directory: ./computer_interact_thing
-
+        working-directory: ./computer_interact_thing      
+        
       - name: Analyze project
         run: flutter analyze
-        working-directory: ./computer_interact_thing      - name: Run tests
+        working-directory: ./computer_interact_thing
+
+      - name: Run tests
         run: flutter test
         working-directory: ./computer_interact_thing
 
