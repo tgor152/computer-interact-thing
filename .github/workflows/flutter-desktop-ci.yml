@@ -39,5 +39,5 @@ jobs:
 
       - name: Create Windows installer
         run: |
-          & "C:\Program Files (x86)\NSIS\makensis.exe" windows/installer/installer.nsi
+          & "C:\Program Files (x86)\NSIS\makensis.exe" installer/installer.nsi
         working-directory: ./computer_interact_thing
