@@ -28,15 +28,15 @@ jobs:
 
       - name: Analyze project
         run: flutter analyze
-        working-directory: ./computer_interact_thing
-
-      - name: Run tests
+        working-directory: ./computer_interact_thing      - name: Run tests
         run: flutter test
         working-directory: ./computer_interact_thing
 
       - name: Build Windows app
         run: flutter build windows --release
-        working-directory: ./computer_interact_thing      - name: Install NSIS
+        working-directory: ./computer_interact_thing
+
+      - name: Install NSIS
         run: choco install nsis -y
 
       - name: Debug Paths
