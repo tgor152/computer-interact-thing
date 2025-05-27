@@ -118,25 +118,11 @@ Section "Install" SecInstall
         
     CheckFallbackPath2:
         # Second fallback path check (x64 architecture path)
-        IfFileExists "..\..\build\windows\x64\runner\Release\computer_interact_thing.exe" FallbackPath2Exists CheckOtherLocations
+        IfFileExists "..\..\build\windows\x64\runner\Release\computer_interact_thing.exe" FallbackPath2Exists NoFilesFound
         
     FallbackPath2Exists:
         !system 'powershell -Command "Write-Host \"Found at ..\..\build\windows\x64\runner\Release\computer_interact_thing.exe\""'
         StrCpy $BuildDir "..\..\build\windows\x64\runner\Release"
-        Goto ContinueInstall
-        
-    CheckOtherLocations:
-        # Search in build directory for the executable
-        !system 'powershell -Command "$files = Get-ChildItem -Path ..\..\build -Recurse -Include \"computer_interact_thing.exe\" -ErrorAction SilentlyContinue; if ($files.Count -gt 0) { Write-Host \"Found executable at: $($files[0].FullName)\"; Set-Content -Path \"found_path.txt\" -Value $($files[0].Directory.FullName) } else { Write-Host \"No executable found in any location\" }"'
-        
-        # Check if we found a path
-        IfFileExists "found_path.txt" UseFoundPath NoFilesFound
-        
-    UseFoundPath:
-        # Use the path we found
-        !define /file FOUND_PATH "found_path.txt"
-        !system 'powershell -Command "Write-Host \"Using found path: ${FOUND_PATH}\""'
-        StrCpy $BuildDir "${FOUND_PATH}"
         Goto ContinueInstall
             
     NoFilesFound:
