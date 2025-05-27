@@ -89,14 +89,14 @@ Section "Install" SecInstall
             MessageBox MB_YESNO "Version $1 is already installed. Do you want to upgrade to version ${VERSION}?" IDYES upgrade IDNO abort
             upgrade:
                 # Run the uninstaller
-                ExecWait '"$0" /S _?=$INSTDIR'
-        ${EndIf}
+                ExecWait '"$0" /S _?=$INSTDIR'        ${EndIf}
     ${EndIf}
-      # Check if build files exist - check multiple possible locations
+    
+    # Check if build files exist - check multiple possible locations
     IfFileExists "${FLUTTER_BUILD_DIR}\computer_interact_thing.exe" UseFlutterBuildDir 0
-    IfFileExists "..\..\build\windows\runner\Release\computer_interact_thing.exe" UseStandardPath 0
-    IfFileExists "..\..\build\windows\x64\runner\Release\computer_interact_thing.exe" UseX64Path NoFilesFound
-      UseFlutterBuildDir:
+    IfFileExists "..\..\build\windows\runner\Release\computer_interact_thing.exe" UseStandardPath 0    IfFileExists "..\..\build\windows\x64\runner\Release\computer_interact_thing.exe" UseX64Path NoFilesFound
+    
+    UseFlutterBuildDir:
         File "${FLUTTER_BUILD_DIR}\computer_interact_thing.exe"
         File "${FLUTTER_BUILD_DIR}\flutter_windows.dll"
         # Install additional DLLs that might be needed
