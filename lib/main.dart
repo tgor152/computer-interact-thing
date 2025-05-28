@@ -8,8 +8,16 @@ import 'package:win32/win32.dart';
 import 'dart:math';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_glow/flutter_glow.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const MyApp());
 }
 
@@ -77,12 +85,15 @@ class _MyHomePageState extends State<MyHomePage> {
   int? _lastY;
   bool _isClicked = false;
   String _currentTime = DateTime.now().toString().substring(0, 19);
+  User? _user;
+  bool _isSigningIn = false;
 
   @override
   void initState() {
     super.initState();
     _startMouseTracking();
     _startClock();
+    _checkAuth();
   }
   
   void _startClock() {
@@ -129,6 +140,44 @@ class _MyHomePageState extends State<MyHomePage> {
         _isClicked = false;
       }
     });
+  }
+
+  Future<void> _checkAuth() async {
+    setState(() => _isSigningIn = true);
+    try {
+      // Anonymous sign-in for demo; replace with email/password or Google if needed
+      final userCred = await FirebaseAuth.instance.signInAnonymously();
+      setState(() {
+        _user = userCred.user;
+        _isSigningIn = false;
+      });
+    } catch (e) {
+      setState(() => _isSigningIn = false);
+      // Handle error (show dialog/snackbar if needed)
+    }
+  }
+
+  Future<void> _uploadEventsToFirestore() async {
+    if (_user == null) return;
+    final batch = FirebaseFirestore.instance.batch();
+    final userEvents = FirebaseFirestore.instance
+        .collection('users')
+        .doc(_user!.uid)
+        .collection('mouse_events');
+    for (final e in _events) {
+      final doc = userEvents.doc();
+      batch.set(doc, {
+        'timestamp': e.timestamp.toIso8601String(),
+        'x': e.x,
+        'y': e.y,
+        'type': e.type,
+      });
+    }
+    await batch.commit();
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Events uploaded to Firestore!')),
+    );
   }
 
   Future<void> _exportToExcel() async {
@@ -182,6 +231,12 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.cloud_upload),
+            onPressed: _user == null || _isSigningIn ? null : _uploadEventsToFirestore,
+            tooltip: _user == null ? 'Sign in to upload' : 'Upload to Firestore',
+            color: Theme.of(context).colorScheme.tertiary,
+          ),
           IconButton(
             icon: const Icon(Icons.save_alt),
             onPressed: _exportToExcel,
