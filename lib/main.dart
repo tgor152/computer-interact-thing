@@ -27,7 +27,7 @@ class MyApp extends StatelessWidget {
           secondary: Color(0xFFFF453A),   // Red for warnings/important info
           tertiary: Color(0xFF30D158),    // Green for positive indicators
           surface: Color(0xFF121212),     // Very dark background
-          surfaceVariant: Color(0xFF1E1E1E),     // Slightly lighter for cards
+          surfaceContainerHighest: Color(0xFF1E1E1E),     // Slightly lighter for cards
         ),
         scaffoldBackgroundColor: const Color(0xFF121212),
         cardTheme: const CardThemeData(
