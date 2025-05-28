@@ -13,9 +13,10 @@ void main() {
   testWidgets('Mouse tracking UI smoke test', (WidgetTester tester) async {
     await tester.pumpWidget(const MyApp());
     // Check for the presence of the main tracking text
-    expect(find.textContaining('Mouse movements tracked'), findsOneWidget);
-    expect(find.textContaining('Mouse clicks'), findsOneWidget);
-    expect(find.textContaining('Distance moved'), findsOneWidget);
-    expect(find.textContaining('Tracking is running in the background.'), findsOneWidget);
+    expect(find.textContaining('MOVEMENTS TRACKED'), findsOneWidget);
+    expect(find.textContaining('CLICK INTERACTIONS'), findsOneWidget);
+    expect(find.textContaining('DISTANCE MOVED'), findsOneWidget);
+    expect(find.textContaining('SYSTEM STATUS'), findsOneWidget);
+    expect(find.textContaining('TRACKING SYSTEM OPERATIONAL'), findsOneWidget);
   });
 }

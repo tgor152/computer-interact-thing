@@ -2,10 +2,12 @@ import 'dart:async';
 import 'dart:ffi' as ffi;
 import 'package:ffi/ffi.dart';
 import 'dart:io';
-import 'package:excel/excel.dart';
+import 'package:excel/excel.dart' hide Border;
 import 'package:flutter/material.dart';
 import 'package:win32/win32.dart';
 import 'dart:math';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_glow/flutter_glow.dart';
 
 void main() {
   runApp(const MyApp());
@@ -18,41 +20,37 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+      title: 'Star Wars Dashboard',
+      theme: ThemeData.dark().copyWith(
+        colorScheme: const ColorScheme.dark(
+          primary: Color(0xFF0A84FF),     // Blue accent like in sci-fi displays
+          secondary: Color(0xFFFF453A),   // Red for warnings/important info
+          tertiary: Color(0xFF30D158),    // Green for positive indicators
+          surface: Color(0xFF121212),     // Very dark background
+          surfaceContainerHighest: Color(0xFF1E1E1E),     // Slightly lighter for cards
+        ),
+        scaffoldBackgroundColor: const Color(0xFF121212),
+        cardTheme: const CardThemeData(
+          elevation: 8,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(15)),
+            side: BorderSide(
+              color: Color(0xFF0A84FF),
+              width: 1,
+            ),
+          ),
+        ),
+        textTheme: GoogleFonts.orbitronTextTheme(
+          ThemeData.dark().textTheme,
+        ),
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const MyHomePage(title: 'IMPERIAL TRACKING SYSTEM'),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
 
   final String title;
 
@@ -74,14 +72,25 @@ class _MyHomePageState extends State<MyHomePage> {
   double _distance = 0.0;
   Timer? _moveTimer;
   Timer? _clickTimer;
+  Timer? _clockTimer;
   int? _lastX;
   int? _lastY;
   bool _isClicked = false;
+  String _currentTime = DateTime.now().toString().substring(0, 19);
 
   @override
   void initState() {
     super.initState();
     _startMouseTracking();
+    _startClock();
+  }
+  
+  void _startClock() {
+    _clockTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      setState(() {
+        _currentTime = DateTime.now().toString().substring(0, 19);
+      });
+    });
   }
 
   void _startMouseTracking() {
@@ -154,6 +163,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void dispose() {
     _moveTimer?.cancel();
     _clickTimer?.cancel();
+    _clockTimer?.cancel();
     super.dispose();
   }
 
@@ -161,25 +171,221 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(widget.title),
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        title: GlowText(
+          widget.title,
+          glowColor: Theme.of(context).colorScheme.primary.withAlpha(128),
+          style: const TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 2.0,
+          ),
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.save_alt),
             onPressed: _exportToExcel,
             tooltip: 'Export to Excel',
+            color: Theme.of(context).colorScheme.tertiary,
           ),
         ],
       ),
-      body: Center(
+      body: Container(
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              // Header section
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surface.withAlpha(179),
+                  borderRadius: BorderRadius.circular(15),
+                  border: Border.all(
+                    color: Theme.of(context).colorScheme.primary,
+                    width: 2,
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'IMPERIAL TRACKING PROTOCOL',
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.primary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      _currentTime,
+                      style: const TextStyle(
+                        color: Colors.white70,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              
+              const SizedBox(height: 24),
+              
+              // Main dashboard grid
+              Expanded(
+                child: GridView.count(
+                  crossAxisCount: 2,
+                  childAspectRatio: 1.5,
+                  mainAxisSpacing: 16,
+                  crossAxisSpacing: 16,
+                  children: [
+                    // Mouse movements card
+                    _buildDashboardCard(
+                      context,
+                      icon: Icons.mouse,
+                      title: 'MOVEMENTS TRACKED',
+                      value: '${_events.length}',
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                    
+                    // Mouse clicks card
+                    _buildDashboardCard(
+                      context,
+                      icon: Icons.touch_app,
+                      title: 'CLICK INTERACTIONS',
+                      value: '$_clickCount',
+                      color: Theme.of(context).colorScheme.secondary,
+                    ),
+                    
+                    // Distance moved card
+                    _buildDashboardCard(
+                      context,
+                      icon: Icons.timeline,
+                      title: 'DISTANCE MOVED',
+                      value: '${_distance.toStringAsFixed(2)} px',
+                      color: Theme.of(context).colorScheme.tertiary,
+                    ),
+                    
+                    // Status card
+                    _buildDashboardCard(
+                      context,
+                      icon: Icons.radar,
+                      title: 'SYSTEM STATUS',
+                      value: 'ACTIVE',
+                      color: Colors.amber,
+                      additionalContent: Column(
+                        children: [
+                          const SizedBox(height: 8),
+                          LinearProgressIndicator(
+                            value: null, // Indeterminate
+                            backgroundColor: Colors.black26,
+                            color: Colors.amber,
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Last Movement:',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: Theme.of(context).colorScheme.onSurface.withAlpha(179),
+                                ),
+                              ),
+                              Text(
+                                _events.isNotEmpty 
+                                  ? '${_events.last.x}, ${_events.last.y}'
+                                  : 'No data',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: Theme.of(context).colorScheme.onSurface.withAlpha(179),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              
+              const SizedBox(height: 16),
+              
+              // Footer with status message
+              Container(
+                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surface.withAlpha(179),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Text(
+                  'TRACKING SYSTEM OPERATIONAL - IMPERIAL AUTHORIZATION LEVEL 5',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+  
+  Widget _buildDashboardCard(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required String value,
+    required Color color,
+    Widget? additionalContent,
+  }) {
+    return Card(
+      color: Theme.of(context).colorScheme.surface.withAlpha(179),
+      elevation: 8,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15),
+        side: BorderSide(color: color, width: 2),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text('Mouse movements tracked: ${_events.length}'),
-            Text('Mouse clicks: $_clickCount'),
-            Text('Distance moved: ${_distance.toStringAsFixed(2)} pixels'),
-            const SizedBox(height: 20),
-            const Text('Tracking is running in the background.'),
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(icon, color: color),
+                const SizedBox(width: 8),
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: color,
+                  ),
+                ),
+              ],
+            ),
+            const Spacer(),
+            Center(
+              child: GlowText(
+                value,
+                glowColor: color.withAlpha(128),
+                style: TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+            if (additionalContent != null) ...[
+              const Spacer(),
+              additionalContent,
+            ],
           ],
         ),
       ),
