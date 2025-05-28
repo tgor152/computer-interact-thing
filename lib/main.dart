@@ -72,14 +72,25 @@ class _MyHomePageState extends State<MyHomePage> {
   double _distance = 0.0;
   Timer? _moveTimer;
   Timer? _clickTimer;
+  Timer? _clockTimer;
   int? _lastX;
   int? _lastY;
   bool _isClicked = false;
+  String _currentTime = DateTime.now().toString().substring(0, 19);
 
   @override
   void initState() {
     super.initState();
     _startMouseTracking();
+    _startClock();
+  }
+  
+  void _startClock() {
+    _clockTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      setState(() {
+        _currentTime = DateTime.now().toString().substring(0, 19);
+      });
+    });
   }
 
   void _startMouseTracking() {
@@ -152,6 +163,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void dispose() {
     _moveTimer?.cancel();
     _clickTimer?.cancel();
+    _clockTimer?.cancel();
     super.dispose();
   }
 
@@ -214,7 +226,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       ),
                     ),
                     Text(
-                      DateTime.now().toString().substring(0, 19),
+                      _currentTime,
                       style: const TextStyle(
                         color: Colors.white70,
                       ),
@@ -267,9 +279,37 @@ class _MyHomePageState extends State<MyHomePage> {
                       title: 'SYSTEM STATUS',
                       value: 'ACTIVE',
                       color: Colors.amber,
-                      additionalContent: const LinearProgressIndicator(
-                        value: null, // Indeterminate
-                        backgroundColor: Colors.black26,
+                      additionalContent: Column(
+                        children: [
+                          const SizedBox(height: 8),
+                          LinearProgressIndicator(
+                            value: null, // Indeterminate
+                            backgroundColor: Colors.black26,
+                            color: Colors.amber,
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Last Movement:',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                                ),
+                              ),
+                              Text(
+                                _events.isNotEmpty 
+                                  ? '${_events.last.x}, ${_events.last.y}'
+                                  : 'No data',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     ),
                   ],
