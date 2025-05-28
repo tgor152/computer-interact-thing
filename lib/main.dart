@@ -178,19 +178,23 @@ class _MyHomePageState extends State<MyHomePage> {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Events uploaded to Firestore!')),
     );
-  }
-
-  Future<void> _exportToExcel() async {
+  }  Future<void> _exportToExcel() async {
     final excel = Excel.createExcel();
     final sheet = excel['MouseEvents'];
-    sheet.appendRow(['Timestamp', 'X', 'Y', 'Type']);
-    for (final e in _events) {
-      sheet.appendRow([
-        e.timestamp.toIso8601String(),
-        e.x,
-        e.y,
-        e.type
-      ]);
+    
+    // Set cell values directly using updateCell instead of appendRow
+    sheet.updateCell(CellIndex.indexByString('A1'), TextCellValue('Timestamp'));
+    sheet.updateCell(CellIndex.indexByString('B1'), TextCellValue('X'));
+    sheet.updateCell(CellIndex.indexByString('C1'), TextCellValue('Y'));
+    sheet.updateCell(CellIndex.indexByString('D1'), TextCellValue('Type'));
+    
+    for (int i = 0; i < _events.length; i++) {
+      final e = _events[i];
+      final row = i + 2; // Start from row 2 (1-indexed)
+      sheet.updateCell(CellIndex.indexByString('A$row'), TextCellValue(e.timestamp.toIso8601String()));
+      sheet.updateCell(CellIndex.indexByString('B$row'), IntCellValue(e.x));
+      sheet.updateCell(CellIndex.indexByString('C$row'), IntCellValue(e.y));
+      sheet.updateCell(CellIndex.indexByString('D$row'), TextCellValue(e.type));
     }
     final downloadsPath = '${Platform.environment['USERPROFILE']}\\Downloads';
     final downloadsDir = Directory(downloadsPath);
