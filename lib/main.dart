@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:ffi' as ffi;
 import 'package:ffi/ffi.dart';
 import 'dart:io';
-import 'package:excel/excel.dart';
+import 'package:excel/excel.dart' hide Border;
 import 'package:flutter/material.dart';
 import 'package:win32/win32.dart';
 import 'dart:math';
@@ -26,15 +26,15 @@ class MyApp extends StatelessWidget {
           primary: Color(0xFF0A84FF),     // Blue accent like in sci-fi displays
           secondary: Color(0xFFFF453A),   // Red for warnings/important info
           tertiary: Color(0xFF30D158),    // Green for positive indicators
-          background: Color(0xFF121212),  // Very dark background
-          surface: Color(0xFF1E1E1E),     // Slightly lighter for cards
+          surface: Color(0xFF121212),     // Very dark background
+          surfaceVariant: Color(0xFF1E1E1E),     // Slightly lighter for cards
         ),
         scaffoldBackgroundColor: const Color(0xFF121212),
-        cardTheme: CardTheme(
+        cardTheme: const CardThemeData(
           elevation: 8,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15),
-            side: const BorderSide(
+            borderRadius: BorderRadius.all(Radius.circular(15)),
+            side: BorderSide(
               color: Color(0xFF0A84FF),
               width: 1,
             ),
@@ -174,7 +174,7 @@ class _MyHomePageState extends State<MyHomePage> {
         backgroundColor: Theme.of(context).colorScheme.surface,
         title: GlowText(
           widget.title,
-          glowColor: Theme.of(context).colorScheme.primary.withOpacity(0.5),
+          glowColor: Theme.of(context).colorScheme.primary.withAlpha(128),
           style: const TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
@@ -192,7 +192,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: Container(
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.background,
+          color: Theme.of(context).colorScheme.surface,
           image: const DecorationImage(
             image: AssetImage('assets/images/stars_bg.jpg'),
             fit: BoxFit.cover,
@@ -208,7 +208,7 @@ class _MyHomePageState extends State<MyHomePage> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surface.withOpacity(0.7),
+                  color: Theme.of(context).colorScheme.surface.withAlpha(179),
                   borderRadius: BorderRadius.circular(15),
                   border: Border.all(
                     color: Theme.of(context).colorScheme.primary,
@@ -295,7 +295,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                 'Last Movement:',
                                 style: TextStyle(
                                   fontSize: 10,
-                                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                                  color: Theme.of(context).colorScheme.onSurface.withAlpha(179),
                                 ),
                               ),
                               Text(
@@ -304,7 +304,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                   : 'No data',
                                 style: TextStyle(
                                   fontSize: 10,
-                                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                                  color: Theme.of(context).colorScheme.onSurface.withAlpha(179),
                                 ),
                               ),
                             ],
@@ -322,7 +322,7 @@ class _MyHomePageState extends State<MyHomePage> {
               Container(
                 padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surface.withOpacity(0.7),
+                  color: Theme.of(context).colorScheme.surface.withAlpha(179),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Text(
@@ -350,7 +350,7 @@ class _MyHomePageState extends State<MyHomePage> {
     Widget? additionalContent,
   }) {
     return Card(
-      color: Theme.of(context).colorScheme.surface.withOpacity(0.7),
+      color: Theme.of(context).colorScheme.surface.withAlpha(179),
       elevation: 8,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(15),
@@ -379,7 +379,7 @@ class _MyHomePageState extends State<MyHomePage> {
             Center(
               child: GlowText(
                 value,
-                glowColor: color.withOpacity(0.5),
+                glowColor: color.withAlpha(128),
                 style: TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
