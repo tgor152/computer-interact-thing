@@ -290,14 +290,14 @@ class _MyHomePageState extends State<MyHomePage> {
                   ],
                 ),
               ),
-              const SizedBox(height: 8), // Reduced spacing
+              const SizedBox(height: 6), // Further reduced spacing
               
               // Main dashboard grid
               Expanded(
                 child: GridView.count(
                   crossAxisCount: 2,
-                  childAspectRatio: 1.6,
-                  mainAxisSpacing: 16,
+                  childAspectRatio: 1.8, // Increased to make cards shorter
+                  mainAxisSpacing: 12, // Reduced from 16
                   crossAxisSpacing: 16,
                   children: [
                     // Mouse movements card
@@ -333,13 +333,13 @@ class _MyHomePageState extends State<MyHomePage> {
                       color: Colors.amber,
                       additionalContent: Column(
                         children: [
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 4), // Reduced from 8
                           LinearProgressIndicator(
                             value: null, // Indeterminate
                             backgroundColor: Colors.black26,
                             color: Colors.amber,
                           ),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 4), // Reduced from 8
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
@@ -367,7 +367,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   ],
                 ),
               ),
-              const SizedBox(height: 8), // Reduced spacing
+              const SizedBox(height: 6), // Further reduced spacing
               
               // Footer with status message
               Container(
@@ -408,7 +408,7 @@ class _MyHomePageState extends State<MyHomePage> {
         side: BorderSide(color: color, width: 2),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16), // Reduced vertical padding
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -419,14 +419,14 @@ class _MyHomePageState extends State<MyHomePage> {
                 Text(
                   title,
                   style: TextStyle(
-                    fontSize: 14,
+                    fontSize: 13, // Reduced from 14
                     fontWeight: FontWeight.bold,
                     color: color,
                   ),
                 ),
               ],
             ),
-            const Spacer(),
+            const SizedBox(height: 10), // Reduced space from Spacer
             Center(
               child: GlowText(
                 value,
@@ -439,7 +439,7 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ),
             if (additionalContent != null) ...[
-              const Spacer(),
+              const SizedBox(height: 5), // Reduced space from Spacer
               additionalContent,
             ],
           ],
