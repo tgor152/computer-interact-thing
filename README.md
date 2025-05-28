@@ -35,6 +35,27 @@ The **Computer Interact Thing** is a real-time mouse tracking application with a
 - **Data Export**: Excel file generation with timestamps and coordinates
 - **Architecture**: Real-time event-driven architecture with timer-based polling
 
+## 📥 Download & Install
+
+### For End Users (Recommended)
+
+**Simply download the pre-built installer - no development setup required!**
+
+1. **Download the Latest Release**
+   - Go to [Releases](https://github.com/tgor152/computer-interact-thing/releases/latest)
+   - Download `ComputerInteractInstaller.exe`
+
+2. **Install & Run**
+   - Run the downloaded installer as administrator
+   - The app will be installed to your Program Files
+   - Launch from Desktop shortcut or Start Menu
+
+**System Requirements:** Windows 10/11 (no additional dependencies needed)
+
+### For Developers
+
+If you want to build from source or contribute to development, see the [Development & Contributing](#🛠️-development--contributing) section below.
+
 ## 🚀 How to Use
 
 ### 📋 Prerequisites
@@ -43,7 +64,9 @@ The **Computer Interact Thing** is a real-time mouse tracking application with a
 - **Flutter SDK 3.7.2+** installed and configured
 - **Visual Studio Build Tools** or **Visual Studio Community** for Windows development
 
-### 🔧 Installation & Setup
+### 🔧 Installation & Setup (For Developers)
+
+> **💡 End users:** If you just want to use the app, see the [Download & Install](#📥-download--install) section above instead.
 
 1. **Clone the Repository**
    ```bash
