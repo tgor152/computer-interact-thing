@@ -193,11 +193,6 @@ class _MyHomePageState extends State<MyHomePage> {
       body: Container(
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surface,
-          image: const DecorationImage(
-            image: AssetImage('assets/images/stars_bg.jpg'),
-            fit: BoxFit.cover,
-            opacity: 0.2,
-          ),
         ),
         child: Padding(
           padding: const EdgeInsets.all(16.0),
