@@ -296,7 +296,7 @@ class _MyHomePageState extends State<MyHomePage> {
               Expanded(
                 child: GridView.count(
                   crossAxisCount: 2,
-                  childAspectRatio: 1.6,
+                  childAspectRatio: 1.8, // Increased to make cards shorter
                   mainAxisSpacing: 16,
                   crossAxisSpacing: 16,
                   children: [
@@ -408,7 +408,7 @@ class _MyHomePageState extends State<MyHomePage> {
         side: BorderSide(color: color, width: 2),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16), // Reduced vertical padding
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -426,7 +426,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
               ],
             ),
-            const Spacer(),
+            const SizedBox(height: 10), // Reduced space from Spacer
             Center(
               child: GlowText(
                 value,
@@ -439,7 +439,7 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ),
             if (additionalContent != null) ...[
-              const Spacer(),
+              const SizedBox(height: 5), // Reduced space from Spacer
               additionalContent,
             ],
           ],
