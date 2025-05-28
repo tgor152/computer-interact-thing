@@ -289,13 +289,13 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
               ),
               
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
               
               // Main dashboard grid
               Expanded(
                 child: GridView.count(
                   crossAxisCount: 2,
-                  childAspectRatio: 1.5,
+                  childAspectRatio: 1.6,
                   mainAxisSpacing: 16,
                   crossAxisSpacing: 16,
                   children: [
@@ -370,7 +370,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
               ),
               
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
               
               // Footer with status message
               Container(
