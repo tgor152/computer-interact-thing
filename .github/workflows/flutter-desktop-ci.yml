@@ -42,3 +42,29 @@ jobs:
         with:
           name: WindowsInstaller
           path: build/windows/ComputerInteractInstaller.exe
+
+      - name: Create Release
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ github.run_number }}
+          name: Release v${{ github.run_number }}
+          body: |
+            ## 🖱️ Computer Interact Thing - Windows Installer
+            
+            Automatically built from the latest commit on main branch.
+            
+            ### 📥 Download & Install
+            - Download `ComputerInteractInstaller.exe` below
+            - Run the installer as administrator
+            - The application will be installed to `Program Files`
+            - Desktop and Start Menu shortcuts will be created
+            
+            ### 🔧 System Requirements
+            - Windows 10/11 
+            - No additional dependencies required
+            
+            **Commit:** ${{ github.sha }}
+          draft: false
+          prerelease: false
+          files: build/windows/ComputerInteractInstaller.exe
