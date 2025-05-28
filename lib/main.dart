@@ -254,19 +254,19 @@ class _MyHomePageState extends State<MyHomePage> {
           color: Theme.of(context).colorScheme.surface,
         ),
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(8.0), // Reduced padding
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
               // Header section
               Container(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(10), // Reduced padding
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.surface.withAlpha(179),
-                  borderRadius: BorderRadius.circular(15),
+                  borderRadius: BorderRadius.circular(12), // Slightly smaller radius
                   border: Border.all(
                     color: Theme.of(context).colorScheme.primary,
-                    width: 2,
+                    width: 1.5, // Slightly thinner border
                   ),
                 ),
                 child: Row(
@@ -277,19 +277,20 @@ class _MyHomePageState extends State<MyHomePage> {
                       style: TextStyle(
                         color: Theme.of(context).colorScheme.primary,
                         fontWeight: FontWeight.bold,
+                        fontSize: 14, // Smaller font
                       ),
                     ),
                     Text(
                       _currentTime,
                       style: const TextStyle(
                         color: Colors.white70,
+                        fontSize: 12, // Smaller font
                       ),
                     ),
                   ],
                 ),
               ),
-              
-              const SizedBox(height: 16),
+              const SizedBox(height: 8), // Reduced spacing
               
               // Main dashboard grid
               Expanded(
@@ -307,7 +308,6 @@ class _MyHomePageState extends State<MyHomePage> {
                       value: '${_events.length}',
                       color: Theme.of(context).colorScheme.primary,
                     ),
-                    
                     // Mouse clicks card
                     _buildDashboardCard(
                       context,
@@ -316,7 +316,6 @@ class _MyHomePageState extends State<MyHomePage> {
                       value: '$_clickCount',
                       color: Theme.of(context).colorScheme.secondary,
                     ),
-                    
                     // Distance moved card
                     _buildDashboardCard(
                       context,
@@ -325,7 +324,6 @@ class _MyHomePageState extends State<MyHomePage> {
                       value: '${_distance.toStringAsFixed(2)} px',
                       color: Theme.of(context).colorScheme.tertiary,
                     ),
-                    
                     // Status card
                     _buildDashboardCard(
                       context,
@@ -369,22 +367,21 @@ class _MyHomePageState extends State<MyHomePage> {
                   ],
                 ),
               ),
-              
-              const SizedBox(height: 12),
+              const SizedBox(height: 8), // Reduced spacing
               
               // Footer with status message
               Container(
-                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10), // Reduced padding
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.surface.withAlpha(179),
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Text(
                   'TRACKING SYSTEM OPERATIONAL - IMPERIAL AUTHORIZATION LEVEL 5',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: Colors.white70,
-                    fontSize: 12,
+                    fontSize: 11, // Smaller font
                   ),
                 ),
               ),
