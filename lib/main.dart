@@ -111,15 +111,23 @@ class _MyHomePageState extends State<MyHomePage> {
       final x = pt.ref.x;
       final y = pt.ref.y;
       calloc.free(pt);
+      
+      // Only log movement if the mouse position has actually changed
       if (_lastX != null && _lastY != null) {
-        final dx = (x - _lastX!).abs();
-        final dy = (y - _lastY!).abs();
-        _distance += sqrt((dx * dx + dy * dy).toDouble());
+        if (x != _lastX || y != _lastY) {
+          final dx = (x - _lastX!).abs();
+          final dy = (y - _lastY!).abs();
+          _distance += sqrt((dx * dx + dy * dy).toDouble());
+          _events.add(MouseEvent(DateTime.now(), x, y, 'move'));
+          setState(() {});
+        }
+      } else {
+        // First time initialization - record the initial position
+        _events.add(MouseEvent(DateTime.now(), x, y, 'move'));
+        setState(() {});
       }
       _lastX = x;
       _lastY = y;
-      _events.add(MouseEvent(DateTime.now(), x, y, 'move'));
-      setState(() {});
     });
     _clickTimer = Timer.periodic(const Duration(milliseconds: 50), (_) {
       bool isButtonPressed = (GetAsyncKeyState(VK_LBUTTON) & 0x8000) != 0;
