@@ -17,8 +17,8 @@ void main() {
     
     await tester.pumpWidget(const MyApp());
     
-    // Wait for async operations to complete (like loading persistent data)
-    await tester.pumpAndSettle();
+    // Skip pumpAndSettle since persistent data loading is async and doesn't block UI
+    await tester.pump();
     
     // Check for the presence of the main tracking text
     expect(find.textContaining('MOVEMENTS TRACKED'), findsOneWidget);
@@ -37,8 +37,9 @@ void main() {
     
     await tester.pumpWidget(const MyApp());
     
-    // Wait for async operations to complete (like loading persistent data)
-    await tester.pumpAndSettle();
+    // Give time for persistent data loading without using pumpAndSettle
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
     
     // Check that the UI shows the persistent data
     expect(find.textContaining('42'), findsOneWidget); // Click count

@@ -102,11 +102,15 @@ class _MyHomePageState extends State<MyHomePage> {
     _checkAuth();
   }
 
-  Future<void> _loadPersistentData() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _clickCount = prefs.getInt('lifetime_click_count') ?? 0;
-      _distance = prefs.getDouble('lifetime_distance') ?? 0.0;
+  void _loadPersistentData() {
+    // Load persistent data asynchronously without blocking initState
+    SharedPreferences.getInstance().then((prefs) {
+      if (mounted) {
+        setState(() {
+          _clickCount = prefs.getInt('lifetime_click_count') ?? 0;
+          _distance = prefs.getDouble('lifetime_distance') ?? 0.0;
+        });
+      }
     });
   }
 
@@ -253,7 +257,11 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void dispose() {
     // Save persistent data one final time when the app is closing
-    _savePersistentData();
+    // Fire-and-forget save since dispose cannot be async
+    SharedPreferences.getInstance().then((prefs) {
+      prefs.setInt('lifetime_click_count', _clickCount);
+      prefs.setDouble('lifetime_distance', _distance);
+    });
     _moveTimer?.cancel();
     _clickTimer?.cancel();
     _clockTimer?.cancel();
