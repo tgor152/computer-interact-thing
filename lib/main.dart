@@ -12,6 +12,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -91,9 +92,24 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
+    _loadPersistentData();
     _startMouseTracking();
     _startClock();
     _checkAuth();
+  }
+
+  Future<void> _loadPersistentData() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _clickCount = prefs.getInt('lifetime_click_count') ?? 0;
+      _distance = prefs.getDouble('lifetime_distance') ?? 0.0;
+    });
+  }
+
+  Future<void> _savePersistentData() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('lifetime_click_count', _clickCount);
+    await prefs.setDouble('lifetime_distance', _distance);
   }
   
   void _startClock() {
@@ -118,6 +134,7 @@ class _MyHomePageState extends State<MyHomePage> {
           final dx = (x - _lastX!).abs();
           final dy = (y - _lastY!).abs();
           _distance += sqrt((dx * dx + dy * dy).toDouble());
+          _savePersistentData(); // Save persistent data when distance changes
           _events.add(MouseEvent(DateTime.now(), x, y, 'move'));
           setState(() {});
         }
@@ -141,6 +158,7 @@ class _MyHomePageState extends State<MyHomePage> {
         calloc.free(pt);
         _events.add(MouseEvent(DateTime.now(), x, y, 'click'));
         _clickCount++;
+        _savePersistentData(); // Save persistent data when click count changes
         setState(() {});
         _isClicked = true;
       } else if (!isButtonPressed && _isClicked) {
