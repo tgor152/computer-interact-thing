@@ -73,5 +73,28 @@ void main() {
       final savedDistance = prefs.getDouble('lifetime_distance') ?? 0.0;
       expect(savedDistance, 50.5);
     });
+
+    test('Should persist lifetime counters correctly across multiple increments', () async {
+      // Arrange
+      final prefs = await SharedPreferences.getInstance();
+      
+      // Act - simulate multiple clicks and distance accumulation
+      int totalClicks = 0;
+      double totalDistance = 0.0;
+      
+      for (int i = 0; i < 5; i++) {
+        totalClicks++;
+        totalDistance += 10.0;
+        await prefs.setInt('lifetime_click_count', totalClicks);
+        await prefs.setDouble('lifetime_distance', totalDistance);
+      }
+      
+      // Assert
+      final finalClicks = prefs.getInt('lifetime_click_count') ?? 0;
+      final finalDistance = prefs.getDouble('lifetime_distance') ?? 0.0;
+      
+      expect(finalClicks, 5);
+      expect(finalDistance, 50.0);
+    });
   });
 }
