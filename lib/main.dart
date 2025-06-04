@@ -12,6 +12,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -87,13 +88,44 @@ class _MyHomePageState extends State<MyHomePage> {
   String _currentTime = DateTime.now().toString().substring(0, 19);
   User? _user;
   bool _isSigningIn = false;
+  
+  // Persistence optimization: save every N updates instead of every update
+  int _updatesSinceLastSave = 0;
+  static const int _saveFrequency = 10; // Save every 10 updates
 
   @override
   void initState() {
     super.initState();
+    _loadPersistentData();
     _startMouseTracking();
     _startClock();
     _checkAuth();
+  }
+
+  void _loadPersistentData() {
+    // Load persistent data asynchronously without blocking initState
+    SharedPreferences.getInstance().then((prefs) {
+      if (mounted) {
+        setState(() {
+          _clickCount = prefs.getInt('lifetime_click_count') ?? 0;
+          _distance = prefs.getDouble('lifetime_distance') ?? 0.0;
+        });
+      }
+    });
+  }
+
+  Future<void> _savePersistentData() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('lifetime_click_count', _clickCount);
+    await prefs.setDouble('lifetime_distance', _distance);
+  }
+
+  void _savePersistentDataIfNeeded() {
+    _updatesSinceLastSave++;
+    if (_updatesSinceLastSave >= _saveFrequency) {
+      _updatesSinceLastSave = 0;
+      _savePersistentData();
+    }
   }
   
   void _startClock() {
@@ -118,6 +150,7 @@ class _MyHomePageState extends State<MyHomePage> {
           final dx = (x - _lastX!).abs();
           final dy = (y - _lastY!).abs();
           _distance += sqrt((dx * dx + dy * dy).toDouble());
+          _savePersistentDataIfNeeded(); // Save less frequently for better performance
           _events.add(MouseEvent(DateTime.now(), x, y, 'move'));
           setState(() {});
         }
@@ -141,6 +174,7 @@ class _MyHomePageState extends State<MyHomePage> {
         calloc.free(pt);
         _events.add(MouseEvent(DateTime.now(), x, y, 'click'));
         _clickCount++;
+        _savePersistentData(); // Always save click count immediately since clicks are less frequent
         setState(() {});
         _isClicked = true;
       } else if (!isButtonPressed && _isClicked) {
@@ -222,6 +256,12 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   void dispose() {
+    // Save persistent data one final time when the app is closing
+    // Fire-and-forget save since dispose cannot be async
+    SharedPreferences.getInstance().then((prefs) {
+      prefs.setInt('lifetime_click_count', _clickCount);
+      prefs.setDouble('lifetime_distance', _distance);
+    });
     _moveTimer?.cancel();
     _clickTimer?.cancel();
     _clockTimer?.cancel();
