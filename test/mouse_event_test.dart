@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:computer_interact_thing/main.dart';
+import 'package:computer_interact_thing/models/mouse_event.dart';
 
 void main() {
   test('MouseEvent stores data correctly', () {

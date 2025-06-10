@@ -29,11 +29,12 @@ The **Computer Interact Thing** is a real-time mouse tracking application with a
 ### 🛠️ Technical Implementation
 
 - **Platform**: Windows Desktop Application (Flutter)
+- **Architecture**: MVVM (Model-View-ViewModel) pattern for clean separation of concerns
 - **Backend**: Direct Windows API integration using `win32` package
 - **UI Framework**: Flutter with Material Design 3
 - **Fonts**: Google Fonts (Orbitron) for futuristic styling
 - **Data Export**: Excel file generation with timestamps and coordinates
-- **Architecture**: Real-time event-driven architecture with timer-based polling
+- **State Management**: ChangeNotifier pattern with reactive UI updates
 
 ## 📥 Download & Install
 
@@ -150,7 +151,25 @@ If you want to build from source or contribute to development, see the [Developm
 
 ```
 lib/
-├── main.dart           # Main application entry point and UI
+├── main.dart           # Main application entry point
+├── models/             # Data models (MVVM Model layer)
+│   ├── mouse_event.dart
+│   └── tracking_data.dart
+├── viewmodels/         # Business logic (MVVM ViewModel layer)
+│   └── tracking_viewmodel.dart
+├── views/              # UI components (MVVM View layer)
+│   └── tracking_view.dart
+├── services/           # External services and utilities
+│   ├── persistence_service.dart
+│   ├── firebase_service.dart
+│   ├── export_service.dart
+│   └── mouse_tracking_service.dart
+└── firebase_options.dart # Firebase configuration
+test/                   # Unit and widget tests
+├── mvvm_structure_test.dart
+├── persistence_test.dart
+├── widget_test.dart
+└── mouse_event_test.dart
 pubspec.yaml           # Dependencies and project configuration
 windows/               # Windows-specific build configuration
 ├── runner/           # Windows runner application
